@@ -1,0 +1,350 @@
+/*
+ * Climoo — Colors & Type
+ * ------------------------------------------------------------------
+ * Lifted directly from climoo-landing-page-main/app/app.css and the
+ * inline styles used across the marketing site components.
+ *
+ * Fonts in the source are loaded via @fontsource-variable. Here we
+ * import them from Google Fonts (same families, same weights) so the
+ * design system is self-contained and works in any HTML preview.
+ */
+
+/* Plus Jakarta Sans is bundled in /fonts (variable axis). Outfit is still
+   fetched from Google Fonts — no .ttf was provided for it. */
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("fonts/PlusJakartaSans-VariableFont_wght.ttf") format("truetype-variations"),
+       url("fonts/PlusJakartaSans-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  src: url("fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf") format("truetype-variations"),
+       url("fonts/PlusJakartaSans-Italic-VariableFont_wght.ttf") format("truetype");
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+@import url("https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap");
+
+:root {
+  /* ──────────────────────────────────────────────────────────
+   *  CORE BRAND COLORS — the deep purples that anchor Climoo
+   * ────────────────────────────────────────────────────────── */
+  --climoo-purple-900: #1b0753; /* darkest — footer, stats backdrop                         */
+  --climoo-purple-800: #210856; /* PRIMARY brand purple — buttons, links, hero blob, header */
+  --climoo-purple-700: #341472; /* mid deep — solutions hero backdrop                       */
+  --climoo-purple-600: #36147d; /* button gradient stop                                     */
+  --climoo-purple-500: #4c1d95; /* card gradient mid                                        */
+  --climoo-purple-400: #5b21b6;
+  --climoo-purple-300: #7c3aed; /* bright violet — icons, gradient highlights              */
+  --climoo-purple-200: #9354e0; /* HERO ACCENT violet — primary CTA on hero, hover color   */
+  --climoo-purple-100: #a855f7; /* lighter purple — animated stats numbers                 */
+  --climoo-purple-050: #c084fc; /* lightest purple — SBTi gradient                         */
+
+  /* ──────────────────────────────────────────────────────────
+   *  COOL / SCIENCE ACCENT — cyan used in decarb gradient
+   * ────────────────────────────────────────────────────────── */
+  --climoo-cyan-400: #62d0e5;   /* signature decarb cyan       */
+  --climoo-cyan-500: #22d3ee;
+  --climoo-cyan-600: #06b6d4;
+  --climoo-cyan-300: #67e8f9;
+
+  /* ──────────────────────────────────────────────────────────
+   *  NEUTRAL SURFACE — the cool blue-gray system. Note that
+   *  Climoo's page background is NOT white, it's #E4EBF0 —
+   *  this is a key visual signature.
+   * ────────────────────────────────────────────────────────── */
+  --climoo-bg-page: #e4ebf0;     /* PAGE BACKGROUND — cool blue-gray         */
+  --climoo-bg-card: #f3f4f6;     /* subtle card fill (why-choose cards)      */
+  --climoo-bg-surface: #ffffff;  /* white panel / mobile drawer / card base  */
+  --climoo-bg-divider: rgba(255, 255, 255, 0.1); /* hairline on dark        */
+  --climoo-border-soft: #e5e7eb; /* mobile drawer divider                    */
+
+  /* ──────────────────────────────────────────────────────────
+   *  TEXT — the Tailwind gray scale Climoo uses
+   * ────────────────────────────────────────────────────────── */
+  --climoo-text-1: #111827;            /* primary heading on light          */
+  --climoo-text-2: #1f2937;            /* body strong                       */
+  --climoo-text-3: #374151;            /* nav link, body                    */
+  --climoo-text-4: #4b5563;            /* secondary, scroll text            */
+  --climoo-text-5: #6b7280;            /* muted body, descriptions          */
+  --climoo-text-inverse: #ffffff;      /* on dark / hero                    */
+  --climoo-text-inverse-soft: rgba(255, 255, 255, 0.92);
+  --climoo-text-inverse-muted: rgba(255, 255, 255, 0.55);
+
+  /* ──────────────────────────────────────────────────────────
+   *  STATE
+   * ────────────────────────────────────────────────────────── */
+  --climoo-cta-default: var(--climoo-purple-800); /* primary CTA bg          */
+  --climoo-cta-hover: var(--climoo-purple-200);   /* swap to violet on hover */
+  --climoo-cta-text: #ffffff;
+  --climoo-focus-ring: var(--climoo-purple-800);
+
+  /* ──────────────────────────────────────────────────────────
+   *  SIGNATURE GRADIENTS
+   *  Climoo uses these very specific gradients across hero
+   *  blobs, solution cards and CTA panels.
+   * ────────────────────────────────────────────────────────── */
+  --climoo-grad-decarb:
+    linear-gradient(0deg, #62d0e5 0%, #9354e0 50%, #371776 100%);
+  --climoo-grad-sbti:
+    linear-gradient(0deg, #c084fc 0%, #7c3aed 50%, #371776 100%);
+  --climoo-grad-card-violet:
+    linear-gradient(145deg, #7c3aed 0%, #4c1d95 60%, #3b0764 100%);
+  --climoo-grad-card-deep:
+    linear-gradient(145deg, #5b21b6 0%, #3b0764 50%, #1e1b4b 100%);
+  --climoo-grad-card-cyan:
+    linear-gradient(145deg, #67e8f9 0%, #22d3ee 40%, #06b6d4 100%);
+  --climoo-grad-card-orchid:
+    linear-gradient(145deg, #c084fc 0%, #a855f7 50%, #7c3aed 100%);
+  --climoo-grad-cta-panel:
+    linear-gradient(120deg, #7c3aed 0%, #3b0764 100%);
+  --climoo-grad-button-primary:
+    linear-gradient(135deg, #36147d 0%, #72499b 100%);
+  --climoo-grad-hero-card-wash:
+    linear-gradient(to bottom left, #9354e080 0%, #ffffff 50%);
+
+  /* ──────────────────────────────────────────────────────────
+   *  RADIUS — Climoo leans very rounded
+   * ────────────────────────────────────────────────────────── */
+  --climoo-radius-sm: 12px;   /* small cards, dropdown items */
+  --climoo-radius-md: 14px;   /* mobile nav cards            */
+  --climoo-radius-lg: 16px;   /* dropdown panel              */
+  --climoo-radius-xl: 20px;   /* solution cards, why-choose  */
+  --climoo-radius-2xl: 24px;  /* drawer, who-we-are image    */
+  --climoo-radius-3xl: 28px;  /* CTA hero panel              */
+  --climoo-radius-pill: 99px; /* all buttons, header chrome  */
+  --climoo-radius-circle: 50%;
+
+  /* ──────────────────────────────────────────────────────────
+   *  SHADOW SYSTEM — soft, large, low-opacity. Climoo never
+   *  uses hard shadows.
+   * ────────────────────────────────────────────────────────── */
+  --climoo-shadow-card: 0 5px 28px rgba(0, 0, 0, 0.1);
+  --climoo-shadow-soft: 0 4px 24px rgba(0, 0, 0, 0.06);
+  --climoo-shadow-image: 0 4px 16px rgba(0, 0, 0, 0.07);
+  --climoo-shadow-hero: 0 12px 32px rgba(0, 0, 0, 0.1); /* drop-shadow on hero img */
+  --climoo-shadow-arrow: 0 2px 12px rgba(33, 8, 86, 0.1);
+  --climoo-shadow-arrow-hover: 0 4px 20px rgba(33, 8, 86, 0.25);
+  --climoo-shadow-scrolled-header: 0 4px 32px rgba(0, 0, 0, 0.3);
+  --climoo-shadow-cta-hover: 0 4px 12px rgba(37, 99, 235, 0.1);
+
+  /* ──────────────────────────────────────────────────────────
+   *  SPACING — page-level rhythm. Sections breathe (~132–138px
+   *  vertical padding on desktop), content sits in a 1280px max.
+   * ────────────────────────────────────────────────────────── */
+  --climoo-space-1: 4px;
+  --climoo-space-2: 8px;
+  --climoo-space-3: 12px;
+  --climoo-space-4: 16px;
+  --climoo-space-5: 20px;
+  --climoo-space-6: 24px;
+  --climoo-space-8: 32px;
+  --climoo-space-10: 40px;
+  --climoo-space-12: 48px;
+  --climoo-space-16: 64px;
+  --climoo-space-20: 80px;
+  --climoo-space-24: 96px;   /* solutions section vertical pad        */
+  --climoo-space-32: 132px;  /* major light section vertical pad      */
+  --climoo-space-34: 138px;  /* stats section vertical pad            */
+  --climoo-container-max: 1280px;
+  --climoo-content-max: 700px;
+  --climoo-header-height: 72px;
+
+  /* ──────────────────────────────────────────────────────────
+   *  MOTION
+   *  Climoo's standard transitions are 0.2–0.3s for hover and
+   *  0.6–1.2s for entrance reveals, all ease-out.
+   * ────────────────────────────────────────────────────────── */
+  --climoo-motion-fast: 0.2s ease;
+  --climoo-motion-base: 0.3s ease-in-out;
+  --climoo-motion-reveal: 0.6s ease-out;
+  --climoo-motion-reveal-slow: 1s ease-out;
+  --climoo-motion-blur: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ──────────────────────────────────────────────────────────
+   *  TYPE — families & semantic tokens
+   * ────────────────────────────────────────────────────────── */
+  --climoo-font-heading:
+    "Plus Jakarta Sans", "Plus Jakarta Sans Variable", ui-sans-serif, system-ui,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+    "Noto Color Emoji";
+  --climoo-font-body:
+    "Outfit", "Outfit Variable", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* Display / hero scale — Climoo uses clamp() heavily so type
+     scales fluidly with viewport. Pick the right token for the
+     surface, not a raw px value. */
+  --climoo-text-hero: clamp(2.25rem, 4vw, 3.75rem);     /* h1 hero          */
+  --climoo-text-hero-lg: clamp(2.25rem, 4vw, 4rem);     /* solution hero    */
+  --climoo-text-h2: clamp(1.75rem, 3vw, 2.75rem);       /* section title    */
+  --climoo-text-h2-sm: clamp(1.75rem, 3vw, 2.5rem);     /* lighter h2       */
+  --climoo-text-h3: 20px;                                /* card title       */
+  --climoo-text-h4: 18px;                                /* card label       */
+  --climoo-text-lead: 20px;                              /* solution hero body */
+  --climoo-text-body-lg: 17px;                           /* hero subtitle    */
+  --climoo-text-body: 16px;                              /* default body     */
+  --climoo-text-meta: 15px;                              /* footer links     */
+  --climoo-text-small: 14px;                             /* secondary        */
+  --climoo-text-tiny: 13px;                              /* footer office    */
+  --climoo-text-micro: 12px;                             /* eyebrow caps     */
+
+  --climoo-stat-number: clamp(3rem, 5.5vw, 5rem);
+
+  --climoo-leading-tight: 1.1;       /* hero title       */
+  --climoo-leading-snug: 1.2;        /* h2               */
+  --climoo-leading-normal: 1.3;      /* card titles      */
+  --climoo-leading-relaxed: 1.5;     /* small text       */
+  --climoo-leading-loose: 1.6;       /* hero subtitle    */
+  --climoo-leading-body: 1.65;       /* default body     */
+
+  --climoo-tracking-caps: 0.12em;    /* eyebrow uppercase */
+}
+
+/* ──────────────────────────────────────────────────────────────
+ *  SEMANTIC TYPE — apply these classes for consistent treatment.
+ * ────────────────────────────────────────────────────────────── */
+
+.climoo-h1 {
+  font-family: var(--climoo-font-heading);
+  font-weight: 700;
+  font-size: var(--climoo-text-hero);
+  line-height: var(--climoo-leading-tight);
+  color: var(--climoo-text-inverse); /* default treatment is on dark hero */
+  margin: 0;
+}
+
+.climoo-h2 {
+  font-family: var(--climoo-font-heading);
+  font-weight: 700;
+  font-size: var(--climoo-text-h2);
+  line-height: var(--climoo-leading-snug);
+  color: var(--climoo-text-1);
+  margin: 0;
+}
+
+.climoo-h2--light {
+  font-weight: 600;
+  color: var(--climoo-text-inverse);
+}
+
+.climoo-h3 {
+  font-family: var(--climoo-font-heading);
+  font-weight: 700;
+  font-size: var(--climoo-text-h3);
+  line-height: var(--climoo-leading-normal);
+  color: var(--climoo-text-1);
+  margin: 0;
+}
+
+.climoo-h4 {
+  font-family: var(--climoo-font-heading);
+  font-weight: 600;
+  font-size: var(--climoo-text-h4);
+  line-height: var(--climoo-leading-normal);
+  color: var(--climoo-text-1);
+  margin: 0;
+}
+
+.climoo-eyebrow {
+  font-family: var(--climoo-font-body);
+  font-weight: 700;
+  font-size: var(--climoo-text-small);
+  color: var(--climoo-purple-200);
+  letter-spacing: 0;
+  margin: 0 0 var(--climoo-space-5) 0;
+}
+
+.climoo-caps {
+  font-family: var(--climoo-font-body);
+  font-weight: 600;
+  font-size: var(--climoo-text-micro);
+  letter-spacing: var(--climoo-tracking-caps);
+  text-transform: uppercase;
+  color: var(--climoo-text-inverse);
+}
+
+.climoo-lead {
+  font-family: var(--climoo-font-body);
+  font-size: var(--climoo-text-lead);
+  line-height: var(--climoo-leading-loose);
+  color: var(--climoo-text-inverse-soft);
+  margin: 0;
+}
+
+.climoo-body {
+  font-family: var(--climoo-font-body);
+  font-size: var(--climoo-text-body);
+  line-height: var(--climoo-leading-body);
+  color: var(--climoo-text-5);
+  margin: 0;
+}
+
+.climoo-meta {
+  font-family: var(--climoo-font-body);
+  font-size: var(--climoo-text-meta);
+  color: var(--climoo-text-inverse);
+}
+
+.climoo-stat-number {
+  font-family: var(--climoo-font-heading);
+  font-weight: 700;
+  font-size: var(--climoo-stat-number);
+  line-height: 1;
+  color: var(--climoo-purple-100);
+  margin: 0;
+}
+
+/* ──────────────────────────────────────────────────────────────
+ *  CTA BUTTON — Climoo's signature pill. ALL buttons are pills.
+ * ────────────────────────────────────────────────────────────── */
+
+.climoo-btn {
+  font-family: var(--climoo-font-body);
+  font-weight: 500;
+  font-size: var(--climoo-text-body);
+  height: 50px;
+  padding: 0 36px;
+  border-radius: var(--climoo-radius-pill);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  transition: background-color var(--climoo-motion-fast),
+    color var(--climoo-motion-fast), transform var(--climoo-motion-fast),
+    box-shadow var(--climoo-motion-fast);
+}
+
+.climoo-btn--primary {
+  background-color: var(--climoo-cta-default);
+  color: var(--climoo-cta-text);
+}
+.climoo-btn--primary:hover {
+  background-color: var(--climoo-purple-200);
+  color: #ffffff;
+}
+
+.climoo-btn--violet {
+  background-color: var(--climoo-purple-200);
+  color: var(--climoo-cta-text);
+}
+.climoo-btn--violet:hover {
+  background-color: #ffffff;
+  color: var(--climoo-purple-800);
+}
+
+.climoo-btn--ghost {
+  background: transparent;
+  color: var(--climoo-text-inverse);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+}
+.climoo-btn--ghost:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

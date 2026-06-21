@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Components — Solution card</title>
+<link rel="stylesheet" href="_preview.css">
+</head>
+<body>
+<div class="card">
+
+<style>
+.s-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+.s-card{aspect-ratio:3/4;border-radius:20px;position:relative;overflow:hidden;}
+.s-card .deco1,.s-card .deco2{position:absolute;border-radius:50%;pointer-events:none;border:1px solid rgba(255,255,255,0.25);}
+.s-card .deco1{top:-30%;right:-20%;width:150%;aspect-ratio:1;}
+.s-card .deco2{top:-10%;right:-40%;width:130%;aspect-ratio:1;}
+.s-card .ttl{position:absolute;bottom:24px;left:24px;right:24px;font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:600;color:#fff;line-height:1.3;}
+</style>
+<div class="s-row">
+  <div class="s-card" style="background:linear-gradient(145deg,#7c3aed 0%,#4c1d95 60%,#3b0764 100%)"><div class="deco1"></div><div class="deco2"></div><div class="ttl">Emissions<br>Inventory</div></div>
+  <div class="s-card" style="background:linear-gradient(145deg,#5b21b6 0%,#3b0764 50%,#1e1b4b 100%)"><div class="deco1" style="border-color:rgba(167,139,250,0.25)"></div><div class="deco2" style="border-color:rgba(167,139,250,0.25)"></div><div class="ttl">ESG Indicators<br>Management</div></div>
+  <div class="s-card" style="background:linear-gradient(145deg,#67e8f9 0%,#22d3ee 40%,#06b6d4 100%)"><div class="deco1"></div><div class="deco2"></div><div class="ttl">Decarbonization<br>Plan</div></div>
+  <div class="s-card" style="background:linear-gradient(145deg,#c084fc 0%,#a855f7 50%,#7c3aed 100%)"><div class="deco1"></div><div class="deco2"></div><div class="ttl">SBTi Targets</div></div>
+</div>
+</div></body></html>

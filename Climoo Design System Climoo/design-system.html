@@ -1,0 +1,1341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Climoo — Design System (A4)</title>
+<link rel="stylesheet" href="colors_and_type.css">
+<style>
+  /* ────────────────────────────────────────────────────────────
+     A4 vertical, print-ready. 210mm × 297mm.
+     Each <section class="page"> is one printed page.
+     ──────────────────────────────────────────────────────────── */
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+
+  :root {
+    --page-w: 210mm;
+    --page-h: 297mm;
+    --pad-x: 16mm;
+    --pad-y: 16mm;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: #c9d1d8;
+    font-family: var(--climoo-font-body);
+    color: var(--climoo-text-1);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Stack of A4 pages, with screen-only gutter */
+  .deck {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8mm;
+    padding: 12mm 0 24mm;
+  }
+
+  .page {
+    width: var(--page-w);
+    height: var(--page-h);
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+    page-break-after: always;
+    box-shadow: 0 4px 28px rgba(0,0,0,0.18);
+  }
+  .page:last-child { page-break-after: auto; }
+
+  @media print {
+    html, body { background: #ffffff; }
+    .deck { gap: 0; padding: 0; }
+    .page { box-shadow: none; margin: 0; }
+  }
+
+  /* ────────────────────────────────────────────────────────────
+     PAGE CHROME
+     ──────────────────────────────────────────────────────────── */
+  .page__body {
+    padding: var(--pad-y) var(--pad-x);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .page__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10mm var(--pad-x) 6mm;
+    border-bottom: 1px solid #eef0f3;
+    flex-shrink: 0;
+  }
+  .page__header .wm {
+    font-family: var(--climoo-font-heading);
+    font-weight: 700;
+    font-size: 12pt;
+    color: var(--climoo-purple-800);
+    letter-spacing: -0.01em;
+  }
+  .page__header .crumb {
+    font-family: var(--climoo-font-body);
+    font-weight: 600;
+    font-size: 8pt;
+    color: var(--climoo-text-5);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+  }
+  .page__footer {
+    margin-top: auto;
+    padding-top: 6mm;
+    border-top: 1px solid #eef0f3;
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--climoo-font-body);
+    font-size: 7.5pt;
+    color: var(--climoo-text-5);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+  .page__content {
+    flex: 1;
+    padding: 8mm var(--pad-x);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  /* ────────────────────────────────────────────────────────────
+     TYPE PRIMITIVES (print scale, in pt)
+     ──────────────────────────────────────────────────────────── */
+  .h-display {
+    font-family: var(--climoo-font-heading);
+    font-weight: 700;
+    font-size: 48pt;
+    line-height: 0.98;
+    letter-spacing: -0.02em;
+    color: var(--climoo-purple-800);
+    margin: 0;
+  }
+  .h-section {
+    font-family: var(--climoo-font-heading);
+    font-weight: 700;
+    font-size: 22pt;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+    color: var(--climoo-text-1);
+    margin: 0 0 4mm;
+  }
+  .h-block {
+    font-family: var(--climoo-font-heading);
+    font-weight: 700;
+    font-size: 11pt;
+    color: var(--climoo-text-1);
+    letter-spacing: -0.005em;
+    margin: 0 0 2.5mm;
+  }
+  .eyebrow {
+    font-family: var(--climoo-font-body);
+    font-weight: 700;
+    font-size: 8pt;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--climoo-purple-200);
+    margin: 0 0 4mm;
+  }
+  .lede {
+    font-family: var(--climoo-font-body);
+    font-size: 11pt;
+    line-height: 1.55;
+    color: var(--climoo-text-3);
+    margin: 0 0 5mm;
+    max-width: 150mm;
+  }
+  .body {
+    font-family: var(--climoo-font-body);
+    font-size: 9.5pt;
+    line-height: 1.55;
+    color: var(--climoo-text-4);
+    margin: 0 0 3mm;
+  }
+  .mono {
+    font-family: ui-monospace, "SF Mono", "Roboto Mono", Consolas, monospace;
+    font-size: 8pt;
+    color: var(--climoo-text-5);
+    letter-spacing: -0.01em;
+  }
+  .label {
+    font-family: var(--climoo-font-body);
+    font-size: 8.5pt;
+    color: var(--climoo-text-2);
+    font-weight: 600;
+  }
+  .label small {
+    display: block;
+    color: var(--climoo-text-5);
+    font-weight: 400;
+    margin-top: 0.6mm;
+  }
+
+  /* ────────────────────────────────────────────────────────────
+     PAGE 1 — COVER
+     ──────────────────────────────────────────────────────────── */
+  .cover {
+    background: #ffffff;
+    color: #fff;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: var(--pad-y) var(--pad-x);
+  }
+  /* signature top-left blob */
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: -120mm;
+    left: -110mm;
+    width: 360mm;
+    height: 360mm;
+    border-radius: 50%;
+    background: var(--climoo-purple-800);
+    z-index: 0;
+  }
+  /* concentric gradient rings */
+  .cover .ring {
+    position: absolute;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    background:
+      linear-gradient(#210856, #210856) padding-box,
+      linear-gradient(to bottom, #62D0E5 0%, #9354E0 50%, #371776 100%) border-box;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.55;
+  }
+  .cover .r1 { width: 240mm; height: 240mm; top: 110mm; left: 90mm; }
+  .cover .r2 { width: 180mm; height: 180mm; top: 145mm; left: 120mm; }
+  .cover .r3 { width: 120mm; height: 120mm; top: 175mm; left: 150mm; }
+
+  .cover__wordmark {
+    position: absolute;
+    top: var(--pad-y);
+    left: var(--pad-x);
+    z-index: 2;
+  }
+  .cover__wordmark img { height: 9mm; display: block; }
+
+  .cover__title {
+    position: relative;
+    z-index: 2;
+    color: #ffffff;
+  }
+  .cover__title .eyebrow {
+    color: #9354E0;
+    margin-bottom: 6mm;
+  }
+  .cover__title h1 {
+    font-family: var(--climoo-font-heading);
+    font-weight: 700;
+    font-size: 56pt;
+    line-height: 0.98;
+    color: #ffffff;
+    margin: 0 0 7mm;
+    letter-spacing: -0.025em;
+    max-width: 170mm;
+  }
+  .cover__title p {
+    font-family: var(--climoo-font-body);
+    font-size: 13pt;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.55;
+    max-width: 130mm;
+    margin: 0;
+  }
+  .cover__meta {
+    position: absolute;
+    bottom: var(--pad-y);
+    right: var(--pad-x);
+    z-index: 2;
+    text-align: right;
+    color: rgba(255,255,255,0.65);
+    font-family: var(--climoo-font-body);
+    font-size: 8pt;
+    line-height: 1.6;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .cover__meta b { color: #fff; font-weight: 600; }
+
+  /* ────────────────────────────────────────────────────────────
+     CONTENT BLOCKS
+     ──────────────────────────────────────────────────────────── */
+
+  .col-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+  .col-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6mm; }
+  .col-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5mm; }
+
+  /* COLOR SWATCHES */
+  .swatch {
+    border-radius: 4mm;
+    height: 32mm;
+    padding: 4mm;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-family: var(--climoo-font-heading);
+    font-weight: 600;
+    font-size: 9pt;
+    box-shadow: inset 0 0 0 0.5px rgba(0,0,0,0.06);
+    position: relative;
+  }
+  .swatch--dark-text { color: var(--climoo-text-1); }
+  .swatch .role {
+    font-family: var(--climoo-font-body);
+    font-weight: 600;
+    font-size: 7.5pt;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .swatch .hex {
+    font-family: ui-monospace, monospace;
+    font-size: 8pt;
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+  .swatch__cap {
+    margin-top: 1.5mm;
+    font-family: var(--climoo-font-body);
+    font-size: 7.5pt;
+    color: var(--climoo-text-5);
+    line-height: 1.4;
+  }
+  .swatch__cap b { color: var(--climoo-text-2); display: block; font-weight: 600; font-size: 8pt; }
+
+  /* GRADIENT TILES */
+  .grad-tile {
+    border-radius: 5mm;
+    height: 28mm;
+    padding: 4mm;
+    color: #fff;
+    display: flex;
+    align-items: flex-end;
+    font-family: var(--climoo-font-heading);
+    font-weight: 600;
+    font-size: 9pt;
+  }
+  .grad-tile__cap {
+    margin-top: 1.5mm;
+    font-family: ui-monospace, monospace;
+    font-size: 7pt;
+    color: var(--climoo-text-5);
+  }
+
+  /* TYPE SAMPLES */
+  .type-card {
+    border-top: 1px solid #eef0f3;
+    padding: 4.5mm 0 4.5mm;
+    display: grid;
+    grid-template-columns: 26mm 1fr 50mm;
+    align-items: baseline;
+    gap: 4mm;
+  }
+  .type-card:last-child { border-bottom: 1px solid #eef0f3; }
+  .type-card .tag {
+    font-family: ui-monospace, monospace;
+    font-size: 7.5pt;
+    color: var(--climoo-purple-300);
+    font-weight: 500;
+  }
+  .type-card .specimen {
+    font-family: var(--climoo-font-heading);
+    color: var(--climoo-text-1);
+  }
+  .type-card .specimen.body { font-family: var(--climoo-font-body); }
+  .type-card .meta {
+    font-family: ui-monospace, monospace;
+    font-size: 7.5pt;
+    color: var(--climoo-text-5);
+    text-align: right;
+    line-height: 1.5;
+  }
+  .type-card .meta b { color: var(--climoo-text-2); display: block; font-weight: 600; font-family: var(--climoo-font-body); }
+
+  /* RADIUS TILES */
+  .radii { display: flex; gap: 4mm; align-items: flex-end; }
+  .radii .r {
+    background: linear-gradient(145deg,#7c3aed 0%,#4c1d95 60%,#3b0764 100%);
+    color: #fff;
+    width: 24mm;
+    height: 24mm;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 2mm;
+    font-family: var(--climoo-font-body);
+    font-size: 7.5pt;
+    font-weight: 600;
+  }
+  .radii .col { display: flex; flex-direction: column; align-items: center; gap: 1mm; }
+  .radii .col .cap {
+    font-family: var(--climoo-font-body);
+    font-size: 7pt;
+    color: var(--climoo-text-5);
+    text-align: center;
+    line-height: 1.3;
+  }
+  .radii .col .cap b { color: var(--climoo-text-2); display: block; font-weight: 600; font-size: 7.5pt; font-family: var(--climoo-font-body); }
+  .radii .pill {
+    width: 50mm; height: 14mm; border-radius: 99px;
+    align-items: center; padding: 0; justify-content: center;
+  }
+
+  /* SHADOWS */
+  .shadows { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+  .shadows .s {
+    height: 26mm;
+    border-radius: 4mm;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--climoo-font-body);
+    font-weight: 600;
+    font-size: 8.5pt;
+    color: var(--climoo-text-3);
+  }
+  .shadows .cap {
+    font-family: ui-monospace, monospace;
+    font-size: 6.8pt;
+    color: var(--climoo-text-5);
+    margin-top: 1.5mm;
+    line-height: 1.4;
+  }
+
+  /* SPACING SCALE */
+  .sp { display: flex; align-items: center; gap: 5mm; margin: 1.2mm 0; }
+  .sp .name {
+    width: 22mm; font-family: var(--climoo-font-body); font-size: 8.5pt;
+    font-weight: 600; color: var(--climoo-text-2);
+  }
+  .sp .bar { background: var(--climoo-purple-200); height: 4mm; border-radius: 1mm; }
+  .sp .tag {
+    font-family: ui-monospace, monospace; font-size: 7.5pt; color: var(--climoo-text-5);
+  }
+
+  /* BUTTONS */
+  .btn {
+    font-family: var(--climoo-font-body);
+    font-weight: 500;
+    font-size: 10pt;
+    height: 12mm;
+    padding: 0 8mm;
+    border-radius: 99px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+  .btn--primary { background: var(--climoo-purple-800); color: #fff; }
+  .btn--violet { background: var(--climoo-purple-200); color: #fff; }
+  .btn--ghost { background: transparent; color: #fff; border: 1.4px solid rgba(255,255,255,0.6); }
+  .btn--secondary { background: #fff; color: var(--climoo-purple-800); box-shadow: inset 0 0 0 1.3px var(--climoo-purple-800); }
+
+  .btn-row { display: flex; gap: 4mm; align-items: center; flex-wrap: wrap; }
+  .btn-stage-dark {
+    background: var(--climoo-purple-800);
+    border-radius: 4mm;
+    padding: 5mm 5mm;
+  }
+
+  /* SOLUTION CARDS */
+  .sol-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4mm; }
+  .sol-card {
+    aspect-ratio: 3/4;
+    border-radius: 5mm;
+    position: relative;
+    overflow: hidden;
+  }
+  .sol-card .deco {
+    position: absolute; border-radius: 50%; pointer-events: none;
+    border: 1px solid rgba(255,255,255,0.25);
+  }
+  .sol-card .d1 { top: -30%; right: -20%; width: 150%; aspect-ratio: 1; }
+  .sol-card .d2 { top: -10%; right: -40%; width: 130%; aspect-ratio: 1; }
+  .sol-card .ttl {
+    position: absolute; bottom: 5mm; left: 5mm; right: 5mm;
+    font-family: var(--climoo-font-heading);
+    font-size: 9pt; font-weight: 600; color: #fff; line-height: 1.25;
+  }
+
+  /* FEATURE CARDS */
+  .feat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5mm; }
+  .feat-card {
+    background: #f3f4f6;
+    border-radius: 5mm;
+    padding: 8mm 6mm;
+    height: 46mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .feat-card svg { color: #7c3aed; width: 10mm; height: 10mm; }
+  .feat-card .ttl {
+    font-family: var(--climoo-font-heading);
+    font-size: 11pt; font-weight: 700; color: var(--climoo-text-1);
+    line-height: 1.25; margin: 0; width: 80%;
+  }
+
+  /* HEADER MOCK */
+  .hdr-stage {
+    background: var(--climoo-bg-page);
+    border-radius: 5mm;
+    padding: 6mm;
+    position: relative;
+    overflow: hidden;
+  }
+  .hdr-stage::before {
+    content: ""; position: absolute;
+    left: -10%; top: -30%; width: 70%; height: 200%;
+    background: radial-gradient(closest-side, var(--climoo-purple-800), transparent);
+    border-radius: 50%; opacity: 0.55;
+  }
+  .hdr-pill {
+    position: relative;
+    background: rgba(33,8,86,0.6);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 99px;
+    height: 16mm;
+    padding: 0 8mm;
+    display: flex; align-items: center; justify-content: space-between;
+    box-shadow: 0 1.3mm 8mm rgba(0,0,0,0.3);
+  }
+  .hdr-pill img { height: 6mm; }
+  .hdr-pill .nav {
+    display: flex; gap: 6mm; color: #fff;
+    font-family: var(--climoo-font-body); font-size: 8.5pt; font-weight: 500;
+  }
+  .hdr-pill .ctab {
+    background: var(--climoo-purple-800); color: #fff;
+    border-radius: 99px; height: 10mm; padding: 0 5mm;
+    display: flex; align-items: center;
+    font-family: var(--climoo-font-body); font-size: 8pt; font-weight: 500;
+  }
+
+  /* HERO BLOB MINI */
+  .blob-stage {
+    background: var(--climoo-bg-page);
+    border-radius: 5mm;
+    height: 60mm;
+    position: relative;
+    overflow: hidden;
+  }
+  .blob-stage .blob {
+    position: absolute;
+    left: -15%; top: -50%;
+    width: 70%; height: 200%;
+    background: var(--climoo-purple-800);
+    border-radius: 50%;
+  }
+  .blob-stage .hl {
+    position: absolute; left: 8mm; top: 10mm;
+    color: #fff; font-family: var(--climoo-font-heading);
+    font-weight: 700; font-size: 13pt; line-height: 1.05;
+    max-width: 65mm;
+  }
+  .blob-stage .sub {
+    position: absolute; left: 8mm; top: 28mm;
+    color: rgba(255,255,255,0.85);
+    font-family: var(--climoo-font-body);
+    font-size: 7.5pt; line-height: 1.4;
+    max-width: 60mm;
+  }
+  .blob-stage .cta {
+    position: absolute; left: 8mm; bottom: 8mm;
+    background: var(--climoo-purple-200); color: #fff;
+    height: 9mm; padding: 0 5mm; border-radius: 99px;
+    display: flex; align-items: center;
+    font-family: var(--climoo-font-body); font-size: 7.5pt; font-weight: 500;
+  }
+
+  /* LOGOS */
+  .logo-row { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
+  .logo-cell {
+    height: 32mm;
+    border-radius: 5mm;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--climoo-bg-page);
+    padding: 6mm;
+  }
+  .logo-cell.dark { background: var(--climoo-purple-800); }
+  .logo-cell img { max-height: 12mm; max-width: 100%; object-fit: contain; }
+
+  /* CLIENT STRIP */
+  .client-strip {
+    background: var(--climoo-bg-page);
+    border-radius: 5mm;
+    padding: 6mm;
+    display: flex; gap: 5mm; align-items: center; flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .client-strip img { height: 9mm; max-width: 28mm; object-fit: contain; opacity: 0.9; }
+
+  /* STANDARDS BAR */
+  .standards-bar {
+    background: #fff;
+    border-radius: 5mm;
+    padding: 6mm 8mm;
+    display: flex; gap: 6mm; align-items: center; flex-wrap: wrap;
+    justify-content: space-between;
+    box-shadow: 0 1mm 6mm rgba(0,0,0,0.06);
+  }
+  .standards-bar .ttl {
+    font-family: var(--climoo-font-heading); font-size: 8pt; font-weight: 700;
+    color: var(--climoo-purple-800); text-transform: uppercase;
+    letter-spacing: 0.06em; line-height: 1.3; max-width: 32mm;
+  }
+  .standards-bar img { height: 12mm; max-width: 30mm; object-fit: contain; }
+
+  /* ICONS GRID */
+  .icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4mm; }
+  .icon-cell {
+    background: #f3f4f6; border-radius: 4mm;
+    height: 16mm;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--climoo-purple-300);
+  }
+  .icon-cell svg { width: 7mm; height: 7mm; }
+  .icon-cap {
+    text-align: center;
+    font-family: ui-monospace, monospace;
+    font-size: 6.5pt; color: var(--climoo-text-5); margin-top: 1.2mm;
+  }
+
+  /* VOICE BLOCK */
+  .voice-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8mm; }
+  .voice-col { display: flex; flex-direction: column; gap: 3mm; }
+  .voice-col h4 {
+    font-family: var(--climoo-font-heading); font-size: 9pt; font-weight: 700;
+    color: var(--climoo-text-1); margin: 0 0 1mm;
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .voice-col .item {
+    font-family: var(--climoo-font-body);
+    font-size: 9pt; line-height: 1.5;
+    color: var(--climoo-text-3); margin: 0;
+  }
+  .voice-col .item b { color: var(--climoo-text-1); font-weight: 600; }
+  .quotes {
+    border-left: 2px solid var(--climoo-purple-200);
+    padding-left: 5mm;
+    display: flex; flex-direction: column; gap: 2mm;
+  }
+  .quotes .q {
+    font-family: var(--climoo-font-heading);
+    font-size: 10pt; font-weight: 600; color: var(--climoo-text-2);
+    line-height: 1.35;
+  }
+
+  /* DO / DON'T */
+  .ddrow { display: grid; grid-template-columns: 1fr 1fr; gap: 6mm; }
+  .ddbox {
+    border-radius: 4mm;
+    padding: 5mm;
+    background: #f6f8fa;
+  }
+  .ddbox h5 {
+    font-family: var(--climoo-font-body);
+    font-size: 8pt; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; margin: 0 0 3mm;
+  }
+  .ddbox.do h5 { color: #1f8a5b; }
+  .ddbox.dont h5 { color: #b91c1c; }
+  .ddbox ul {
+    margin: 0; padding: 0; list-style: none;
+    display: flex; flex-direction: column; gap: 1.8mm;
+  }
+  .ddbox li {
+    font-family: var(--climoo-font-body); font-size: 8.5pt;
+    color: var(--climoo-text-3); line-height: 1.4;
+    padding-left: 5mm; position: relative;
+  }
+  .ddbox.do li::before { content: "✓"; position: absolute; left: 0; color: #1f8a5b; font-weight: 700; }
+  .ddbox.dont li::before { content: "✕"; position: absolute; left: 0; color: #b91c1c; font-weight: 700; }
+
+  /* USAGE TABLE */
+  .ufull {
+    border-radius: 4mm; overflow: hidden;
+    border: 1px solid #eef0f3;
+  }
+  .urow {
+    display: grid; grid-template-columns: 40mm 1fr;
+    padding: 3mm 5mm;
+    border-bottom: 1px solid #eef0f3;
+    align-items: baseline;
+  }
+  .urow:last-child { border-bottom: none; }
+  .urow .uk {
+    font-family: ui-monospace, monospace; font-size: 7.5pt; color: var(--climoo-purple-300);
+  }
+  .urow .uv {
+    font-family: var(--climoo-font-body); font-size: 8.5pt; color: var(--climoo-text-3); line-height: 1.45;
+  }
+
+  /* TOC */
+  .toc {
+    display: flex; flex-direction: column; gap: 3mm;
+    max-width: 130mm;
+  }
+  .toc .item {
+    display: grid; grid-template-columns: 12mm 1fr 16mm;
+    align-items: baseline; gap: 5mm;
+    padding: 3mm 0;
+    border-bottom: 1px solid #eef0f3;
+  }
+  .toc .n {
+    font-family: var(--climoo-font-heading);
+    font-weight: 700; font-size: 16pt; color: var(--climoo-purple-200);
+    line-height: 1;
+  }
+  .toc .nm {
+    font-family: var(--climoo-font-heading);
+    font-weight: 600; font-size: 13pt; color: var(--climoo-text-1);
+  }
+  .toc .nm small {
+    display: block; font-family: var(--climoo-font-body);
+    font-size: 8.5pt; font-weight: 400; color: var(--climoo-text-5);
+    margin-top: 0.6mm; letter-spacing: 0;
+  }
+  .toc .p {
+    text-align: right;
+    font-family: ui-monospace, monospace;
+    font-size: 9pt; color: var(--climoo-text-5);
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+<!-- ───────────────────────────── 1. COVER ───────────────────────────── -->
+<section class="page" data-screen-label="01 Cover">
+  <div class="cover">
+    <div class="cover__wordmark">
+      <img src="assets/logos/horizontal-logo.png" alt="Climoo">
+    </div>
+    <div class="ring r1"></div>
+    <div class="ring r2"></div>
+    <div class="ring r3"></div>
+
+    <div class="cover__title">
+      <div class="eyebrow">Design System · v1.0</div>
+      <h1>Climoo<br>brand &amp; product<br>design system</h1>
+      <p>Colors, type, components, motion, voice — everything needed to build on-brand interfaces, marketing, and collateral for Climoo.</p>
+    </div>
+
+    <div class="cover__meta">
+      <div><b>Issued</b> May 2026</div>
+      <div><b>Source</b> climoo.com.br · plataforma.climoo.com.br</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 2. TOC ───────────────────────────── -->
+<section class="page" data-screen-label="02 Contents">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">Contents</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Inside this document</div>
+    <h2 class="h-section">Contents</h2>
+    <p class="lede">Eleven pages covering company context, voice, the visual foundations (color, type, spacing, motion, shadow), then components and brand elements as they appear in real Climoo surfaces.</p>
+
+    <div class="toc" style="margin-top: 8mm;">
+      <div class="item"><div class="n">01</div><div class="nm">Company &amp; voice<small>Who Climoo is, who it talks to, how it sounds.</small></div><div class="p">p.03</div></div>
+      <div class="item"><div class="n">02</div><div class="nm">Color — brand spine<small>The deep purples that anchor everything.</small></div><div class="p">p.04</div></div>
+      <div class="item"><div class="n">03</div><div class="nm">Color — accents &amp; surfaces<small>Lavender + cyan, plus the cool-gray page background.</small></div><div class="p">p.05</div></div>
+      <div class="item"><div class="n">04</div><div class="nm">Color — signature gradients<small>Decarb, SBTi, solution-card, CTA gradients.</small></div><div class="p">p.06</div></div>
+      <div class="item"><div class="n">05</div><div class="nm">Typography<small>Plus Jakarta Sans + Outfit, semantic scale.</small></div><div class="p">p.07</div></div>
+      <div class="item"><div class="n">06</div><div class="nm">Spacing, radius &amp; shadow<small>Tokens and elevation system.</small></div><div class="p">p.08</div></div>
+      <div class="item"><div class="n">07</div><div class="nm">Components<small>Buttons, header, cards.</small></div><div class="p">p.09</div></div>
+      <div class="item"><div class="n">08</div><div class="nm">Brand motifs<small>Hero blob and concentric rings.</small></div><div class="p">p.10</div></div>
+      <div class="item"><div class="n">09</div><div class="nm">Logos &amp; client marks<small>Climoo wordmark + trust signals.</small></div><div class="p">p.11</div></div>
+      <div class="item"><div class="n">10</div><div class="nm">Iconography<small>Outlined Lucide-style 1.5–2px stroke.</small></div><div class="p">p.12</div></div>
+      <div class="item"><div class="n">11</div><div class="nm">Voice — do &amp; don't<small>Concrete copy moves, pitfalls to avoid.</small></div><div class="p">p.13</div></div>
+    </div>
+
+    <div class="page__footer">
+      <div>Climoo Design System</div><div>02</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 3. COMPANY ───────────────────────────── -->
+<section class="page" data-screen-label="03 Company">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">01 · Company &amp; voice</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">About Climoo</div>
+    <h2 class="h-section">Brazilian climate-tech, built for the framework world</h2>
+    <p class="lede">Climoo is a Brazilian technology + consulting company. Its SaaS platform helps mid-market and enterprise companies measure, plan and track carbon emissions in compliance with GHG Protocol, CDP, TCFD, IFRS and SBTi.</p>
+
+    <div class="col-2" style="margin-top: 6mm;">
+      <div>
+        <div class="h-block">What Climoo sells</div>
+        <p class="body">An integrated platform covering emissions inventory (scopes 1/2/3), ESG indicator management, decarbonization planning, SBTi target submission, and TCFD-aligned climate risk analysis.</p>
+        <p class="body"><b style="color:var(--climoo-text-1)">200+ companies served · 15 countries.</b> Named clients include Eurofarma, Movida, Mills, RD Saúde and Special Dog.</p>
+      </div>
+      <div>
+        <div class="h-block">Voice in three words</div>
+        <p class="body"><b style="color:var(--climoo-text-1)">Expert.</b> Talks to people who already know the acronyms. Doesn't explain SBTi or CSRD.</p>
+        <p class="body"><b style="color:var(--climoo-text-1)">Pragmatic.</b> Lives in the gap between consulting expertise and auditable software.</p>
+        <p class="body"><b style="color:var(--climoo-text-1)">Composed.</b> Never preachy. No climate doom, no exclamation points, no emoji.</p>
+      </div>
+    </div>
+
+    <div style="height: 6mm;"></div>
+    <div class="h-block">Phrases that sound like Climoo</div>
+    <div class="quotes" style="margin-top: 3mm;">
+      <div class="q">"Create and manage your decarbonization strategy."</div>
+      <div class="q">"More clarity, less effort."</div>
+      <div class="q">"Your emissions management doesn't have to be like this."</div>
+      <div class="q">"This isn't lack of climate commitment. It's lack of a tool made for your business."</div>
+      <div class="q">"The first 30 days are on us. No credit card, no commitment."</div>
+    </div>
+
+    <div class="page__footer">
+      <div>01 · Company &amp; voice</div><div>03</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 4. COLOR — BRAND SPINE ───────────────────────────── -->
+<section class="page" data-screen-label="04 Color · Brand">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">02 · Color — brand spine</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Foundations · Color</div>
+    <h2 class="h-section">The brand spine is deep purple</h2>
+    <p class="lede">Climoo is anchored by a single deep, almost-black purple — <code style="font-family:ui-monospace,monospace">#210856</code>. Use it more than you think you should: primary CTAs, hero blob, scrolled header pill, link hovers.</p>
+
+    <div class="col-3">
+      <div>
+        <div class="swatch" style="background:#1b0753">
+          <div class="role">900 · deep</div>
+          <div><div>Purple 900</div><div class="hex">#1B0753</div></div>
+        </div>
+        <div class="swatch__cap"><b>Footer / Stats</b>The darkest stop. Used as a section background to give heavyweight sections gravitas.</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#210856">
+          <div class="role">800 · primary</div>
+          <div><div>Purple 800</div><div class="hex">#210856</div></div>
+        </div>
+        <div class="swatch__cap"><b>★ The Climoo color</b>Every primary CTA, hero blob, scrolled header pill, link hover, scroll indicator.</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#341472">
+          <div class="role">700</div>
+          <div><div>Purple 700</div><div class="hex">#341472</div></div>
+        </div>
+        <div class="swatch__cap"><b>Solution hero</b>The backdrop of solution-detail page heroes (sits behind the concentric rings).</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#36147d">
+          <div class="role">600</div>
+          <div><div>Purple 600</div><div class="hex">#36147D</div></div>
+        </div>
+        <div class="swatch__cap"><b>Button gradient</b>Top stop of the legacy linear-button gradient.</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#7c3aed">
+          <div class="role">300</div>
+          <div><div>Purple 300</div><div class="hex">#7C3AED</div></div>
+        </div>
+        <div class="swatch__cap"><b>Feature icons</b>The bright violet on icons in why-choose cards. Also a gradient mid-stop.</div>
+      </div>
+      <div>
+        <div class="swatch" style="background:#9354e0">
+          <div class="role">200 · accent</div>
+          <div><div>Purple 200</div><div class="hex">#9354E0</div></div>
+        </div>
+        <div class="swatch__cap"><b>★ Hero CTA accent</b>The primary CTA on hero — bright violet. Also the hover-swap for many primary buttons.</div>
+      </div>
+    </div>
+
+    <div class="page__footer">
+      <div>02 · Color — brand spine</div><div>04</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 5. COLOR — ACCENTS & SURFACES ───────────────────────────── -->
+<section class="page" data-screen-label="05 Color · Accents">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">03 · Color — accents &amp; surfaces</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Foundations · Color</div>
+    <h2 class="h-section">Lavender, cyan, and a non-white surface</h2>
+    <p class="lede">Accent purples lift the brand spine; cyan signals the decarb / science axis. The page background is intentionally not white — <code style="font-family:ui-monospace,monospace">#E4EBF0</code> is part of Climoo's identity.</p>
+
+    <div class="h-block">Lavender + cyan accents</div>
+    <div class="col-3" style="margin-bottom: 5mm;">
+      <div><div class="swatch" style="background:#a855f7"><div class="role">100</div><div><div>Purple 100</div><div class="hex">#A855F7</div></div></div><div class="swatch__cap"><b>Stat numbers</b>The big animated counters on the dark stats section.</div></div>
+      <div><div class="swatch swatch--dark-text" style="background:#c084fc"><div class="role">050</div><div><div>Purple 050</div><div class="hex">#C084FC</div></div></div><div class="swatch__cap"><b>SBTi gradient</b>Top stop of the SBTi page gradient backdrop.</div></div>
+      <div><div class="swatch" style="background:#62d0e5;color:#0a4f5c"><div class="role">cyan · 400</div><div><div>Cyan 400</div><div class="hex">#62D0E5</div></div></div><div class="swatch__cap"><b>Decarb signature</b>Top of the decarb gradient. Appears in solution-card gradient borders.</div></div>
+      <div><div class="swatch" style="background:#67e8f9;color:#0a4f5c"><div class="role">cyan · 300</div><div><div>Cyan 300</div><div class="hex">#67E8F9</div></div></div><div class="swatch__cap"><b>Solution card</b>Top stop of the cyan solution-card gradient.</div></div>
+      <div><div class="swatch" style="background:#22d3ee;color:#0a4f5c"><div class="role">cyan · 500</div><div><div>Cyan 500</div><div class="hex">#22D3EE</div></div></div><div class="swatch__cap"><b>Card mid</b>Middle stop on the same cyan card gradient.</div></div>
+      <div><div class="swatch" style="background:#06b6d4"><div class="role">cyan · 600</div><div><div>Cyan 600</div><div class="hex">#06B6D4</div></div></div><div class="swatch__cap"><b>Card base</b>Deep cyan stop — anchors the gradient at the bottom.</div></div>
+    </div>
+
+    <div class="h-block">Surfaces</div>
+    <div class="col-4">
+      <div><div class="swatch swatch--dark-text" style="background:#e4ebf0"><div class="role">page</div><div><div>Page bg</div><div class="hex">#E4EBF0</div></div></div><div class="swatch__cap"><b>★ Not white</b>Climoo's page background is cool blue-gray, not white. This is a signature.</div></div>
+      <div><div class="swatch swatch--dark-text" style="background:#f3f4f6"><div class="role">card</div><div><div>Card fill</div><div class="hex">#F3F4F6</div></div></div><div class="swatch__cap"><b>Why-choose card</b>The subtle gray fill of flat (non-gradient) feature cards.</div></div>
+      <div><div class="swatch swatch--dark-text" style="background:#ffffff; box-shadow: inset 0 0 0 1px #e5e7eb"><div class="role">surface</div><div><div>White</div><div class="hex">#FFFFFF</div></div></div><div class="swatch__cap"><b>Drawer / standards</b>Used for the mobile drawer interior and the framework-bar surface.</div></div>
+      <div><div class="swatch swatch--dark-text" style="background:#e5e7eb;color:#374151"><div class="role">border</div><div><div>Border</div><div class="hex">#E5E7EB</div></div></div><div class="swatch__cap"><b>Hairline divider</b>The 1px line in the mobile drawer and between footer columns.</div></div>
+    </div>
+
+    <div class="page__footer">
+      <div>03 · Color — accents &amp; surfaces</div><div>05</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 6. GRADIENTS ───────────────────────────── -->
+<section class="page" data-screen-label="06 Color · Gradients">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">04 · Color — gradients</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Foundations · Color</div>
+    <h2 class="h-section">Signature gradients</h2>
+    <p class="lede">Gradients carry a lot of brand weight at Climoo — but they stay inside one palette: deep purple to violet, violet to cyan, never warm hues. Six canonical gradients cover the whole site.</p>
+
+    <div class="col-2">
+      <div>
+        <div class="grad-tile" style="background:linear-gradient(0deg,#62d0e5 0%,#9354e0 50%,#371776 100%)">Decarb · cyan → violet → purple</div>
+        <div class="grad-tile__cap">linear-gradient(0deg, #62D0E5 0%, #9354E0 50%, #371776 100%)<br><span style="color:var(--climoo-text-3);font-family:var(--climoo-font-body);font-size:8pt">→ Decarb hero backdrop, ring borders</span></div>
+      </div>
+      <div>
+        <div class="grad-tile" style="background:linear-gradient(0deg,#c084fc 0%,#7c3aed 50%,#371776 100%)">SBTi · orchid → violet → purple</div>
+        <div class="grad-tile__cap">linear-gradient(0deg, #C084FC 0%, #7C3AED 50%, #371776 100%)<br><span style="color:var(--climoo-text-3);font-family:var(--climoo-font-body);font-size:8pt">→ SBTi page hero backdrop</span></div>
+      </div>
+      <div>
+        <div class="grad-tile" style="background:linear-gradient(145deg,#7c3aed 0%,#4c1d95 60%,#3b0764 100%)">Solution card · violet</div>
+        <div class="grad-tile__cap">linear-gradient(145deg, #7C3AED, #4C1D95 60%, #3B0764)<br><span style="color:var(--climoo-text-3);font-family:var(--climoo-font-body);font-size:8pt">→ Inventory solution card</span></div>
+      </div>
+      <div>
+        <div class="grad-tile" style="background:linear-gradient(145deg,#67e8f9 0%,#22d3ee 40%,#06b6d4 100%);color:#073745">Solution card · cyan</div>
+        <div class="grad-tile__cap">linear-gradient(145deg, #67E8F9, #22D3EE 40%, #06B6D4)<br><span style="color:var(--climoo-text-3);font-family:var(--climoo-font-body);font-size:8pt">→ Decarb solution card</span></div>
+      </div>
+      <div>
+        <div class="grad-tile" style="background:linear-gradient(120deg,#7c3aed 0%,#3b0764 100%)">CTA panel</div>
+        <div class="grad-tile__cap">linear-gradient(120deg, #7C3AED 0%, #3B0764 100%)<br><span style="color:var(--climoo-text-3);font-family:var(--climoo-font-body);font-size:8pt">→ Bottom CTA card (with cropped person)</span></div>
+      </div>
+      <div>
+        <div class="grad-tile" style="background:linear-gradient(135deg,#36147d 0%,#72499b 100%)">Button primary (legacy)</div>
+        <div class="grad-tile__cap">linear-gradient(135deg, #36147D 0%, #72499B 100%)<br><span style="color:var(--climoo-text-3);font-family:var(--climoo-font-body);font-size:8pt">→ Ant Design Button primary variant</span></div>
+      </div>
+    </div>
+
+    <div class="page__footer">
+      <div>04 · Color — gradients</div><div>06</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 7. TYPE ───────────────────────────── -->
+<section class="page" data-screen-label="07 Type">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">05 · Typography</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Foundations · Type</div>
+    <h2 class="h-section">Plus Jakarta Sans &amp; Outfit</h2>
+    <p class="lede">Two families, both variable, both sans. Plus Jakarta Sans on every heading, Outfit on every body. No serif, no mono in surfacing; fluid <code style="font-family:ui-monospace,monospace">clamp()</code> sizes on display type.</p>
+
+    <div class="col-2" style="margin-bottom: 5mm;">
+      <div>
+        <div class="h-block">Headings — Plus Jakarta Sans</div>
+        <div style="font-family:'Plus Jakarta Sans',sans-serif; font-weight:700; font-size:32pt; line-height:1; letter-spacing:-0.015em; color:var(--climoo-text-1);">Aa</div>
+        <div class="mono" style="margin-top:1mm">700 weight · variable axis 200–800<br>Tracking −0.01em on display</div>
+      </div>
+      <div>
+        <div class="h-block">Body — Outfit</div>
+        <div style="font-family:'Outfit',sans-serif; font-weight:400; font-size:32pt; line-height:1; color:var(--climoo-text-2);">Aa</div>
+        <div class="mono" style="margin-top:1mm">400 body · 500 buttons · 600 emphasis<br>Default tracking, line-height 1.55–1.65</div>
+      </div>
+    </div>
+
+    <div class="h-block">Semantic scale</div>
+    <div>
+      <div class="type-card">
+        <div class="tag">--text-hero</div>
+        <div class="specimen" style="font-size:24pt;line-height:1;font-weight:700;">Create and manage</div>
+        <div class="meta"><b>Hero h1</b>clamp(36 → 60) · 1.1 line-height</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">--text-h2</div>
+        <div class="specimen" style="font-size:18pt;line-height:1;font-weight:700;">Why choose Climoo?</div>
+        <div class="meta"><b>Section h2</b>clamp(28 → 44) · 1.2 line-height</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">--text-h3</div>
+        <div class="specimen" style="font-size:13pt;font-weight:700;">Certified professionals</div>
+        <div class="meta"><b>Card title</b>20px · 1.3 line-height</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">--text-body-lg</div>
+        <div class="specimen body" style="font-size:11pt;font-weight:400;line-height:1.55;color:var(--climoo-text-3)">Simplify sustainability management with our integrated solutions.</div>
+        <div class="meta"><b>Hero subtitle</b>17px · 1.6 line-height · Outfit 400</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">--text-body</div>
+        <div class="specimen body" style="font-size:10pt;font-weight:400;line-height:1.6;color:var(--climoo-text-5)">Everything you need to manage your climate strategy in a single platform.</div>
+        <div class="meta"><b>Body / description</b>16px · 1.65 · Outfit 400</div>
+      </div>
+      <div class="type-card">
+        <div class="tag">--text-micro</div>
+        <div class="specimen body" style="font-size:8pt;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:var(--climoo-purple-200);">Problems</div>
+        <div class="meta"><b>Eyebrow caps</b>12px · .12em · Outfit 600</div>
+      </div>
+    </div>
+
+    <div class="page__footer">
+      <div>05 · Typography</div><div>07</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 8. SPACING / RADIUS / SHADOW ───────────────────────────── -->
+<section class="page" data-screen-label="08 Spacing">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">06 · Spacing · Radius · Shadow</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Foundations · Tokens</div>
+    <h2 class="h-section">Spacing, radius &amp; elevation</h2>
+    <p class="lede">Sections breathe heavily (≈132–138px vertical pad on desktop). Buttons are always pills. Shadows are large, soft, low opacity — Climoo never uses a hard black shadow.</p>
+
+    <div class="col-2">
+      <div>
+        <div class="h-block">Spacing scale</div>
+        <div class="sp"><div class="name">space-2</div><div class="bar" style="width:2.1mm"></div><div class="tag">8px</div></div>
+        <div class="sp"><div class="name">space-3</div><div class="bar" style="width:3.2mm"></div><div class="tag">12px</div></div>
+        <div class="sp"><div class="name">space-4</div><div class="bar" style="width:4.2mm"></div><div class="tag">16px · card gap</div></div>
+        <div class="sp"><div class="name">space-6</div><div class="bar" style="width:6.3mm"></div><div class="tag">24px · drawer pad</div></div>
+        <div class="sp"><div class="name">space-8</div><div class="bar" style="width:8.5mm"></div><div class="tag">32px · card pad</div></div>
+        <div class="sp"><div class="name">space-12</div><div class="bar" style="width:12.7mm"></div><div class="tag">48px · h2 gap</div></div>
+        <div class="sp"><div class="name">space-16</div><div class="bar" style="width:16.9mm"></div><div class="tag">64px · grid gap</div></div>
+        <div class="sp"><div class="name">space-24</div><div class="bar" style="width:25.4mm"></div><div class="tag">96px · section</div></div>
+        <div class="sp"><div class="name">space-32</div><div class="bar" style="width:34.9mm"></div><div class="tag">132–138px · major section</div></div>
+      </div>
+      <div>
+        <div class="h-block">Radius scale</div>
+        <div class="radii" style="flex-wrap:wrap;">
+          <div class="col"><div class="r" style="border-radius:3mm">12</div><div class="cap"><b>sm</b>12px</div></div>
+          <div class="col"><div class="r" style="border-radius:4mm">14</div><div class="cap"><b>md</b>14px</div></div>
+          <div class="col"><div class="r" style="border-radius:5mm">20</div><div class="cap"><b>xl · cards</b>20px</div></div>
+          <div class="col"><div class="r" style="border-radius:7mm">28</div><div class="cap"><b>3xl · CTA</b>28px</div></div>
+        </div>
+        <div class="radii" style="margin-top:4mm;">
+          <div class="col"><div class="r pill">99 pill</div><div class="cap"><b>pill · buttons</b>border-radius: 99px (every button)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div style="height: 8mm;"></div>
+    <div class="h-block">Shadow / elevation</div>
+    <div class="shadows">
+      <div><div class="s" style="box-shadow:0 4px 16px rgba(0,0,0,0.07)">soft</div><div class="cap">0 4 16 · rgba(0,0,0,.07) → product image lift</div></div>
+      <div><div class="s" style="box-shadow:0 5px 28px rgba(0,0,0,0.10)">card</div><div class="cap">0 5 28 · rgba(0,0,0,.10) → hero card / standard surface</div></div>
+      <div><div class="s" style="box-shadow:0 12px 32px rgba(0,0,0,0.10)">hero drop</div><div class="cap">0 12 32 · rgba(0,0,0,.10) → drop-shadow on hero PNG</div></div>
+      <div><div class="s" style="box-shadow:0 2px 12px rgba(33,8,86,0.10)">arrow rest</div><div class="cap">0 2 12 · rgba(33,8,86,.10) → carousel arrow</div></div>
+      <div><div class="s" style="box-shadow:0 4px 20px rgba(33,8,86,0.25)">arrow hover</div><div class="cap">0 4 20 · rgba(33,8,86,.25) → hover-state lift</div></div>
+      <div><div class="s" style="background:rgba(33,8,86,0.7);color:#fff;box-shadow:0 4px 32px rgba(0,0,0,0.3)">scrolled pill</div><div class="cap">0 4 32 · rgba(0,0,0,.30) → floating header pill</div></div>
+    </div>
+
+    <div class="page__footer">
+      <div>06 · Spacing · Radius · Shadow</div><div>08</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 9. COMPONENTS ───────────────────────────── -->
+<section class="page" data-screen-label="09 Components">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">07 · Components</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Components</div>
+    <h2 class="h-section">Buttons, header, cards</h2>
+    <p class="lede">Every button is a pill. The header is a floating pill that gains backdrop-blur once scrolled. Solution cards carry gradient + concentric-ring decoration; feature cards stay flat with a stroked icon at the top.</p>
+
+    <div class="h-block">Buttons — pill at every size, every context</div>
+    <div class="btn-row" style="margin-bottom:3mm">
+      <button class="btn btn--primary">Schedule a demo</button>
+      <button class="btn btn--violet">Hover state (violet)</button>
+      <button class="btn btn--secondary">Secondary</button>
+    </div>
+    <div class="btn-stage-dark">
+      <div class="btn-row">
+        <button class="btn btn--violet">Schedule a demo</button>
+        <button class="btn btn--ghost">Sign in</button>
+      </div>
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="h-block">Header — floating pill, scrolled state</div>
+    <div class="hdr-stage">
+      <div class="hdr-pill">
+        <img src="assets/logos/horizontal-logo.png" alt="Climoo">
+        <div class="nav"><span>Solutions ⌄</span><span>About</span><span>Insights</span></div>
+        <div class="ctab">Schedule a demo</div>
+      </div>
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="h-block">Solution cards — gradient + concentric-ring decorators</div>
+    <div class="sol-row">
+      <div class="sol-card" style="background:linear-gradient(145deg,#7c3aed 0%,#4c1d95 60%,#3b0764 100%)"><div class="deco d1"></div><div class="deco d2"></div><div class="ttl">Emissions<br>Inventory</div></div>
+      <div class="sol-card" style="background:linear-gradient(145deg,#5b21b6 0%,#3b0764 50%,#1e1b4b 100%)"><div class="deco d1"></div><div class="deco d2"></div><div class="ttl">ESG Indicators<br>Management</div></div>
+      <div class="sol-card" style="background:linear-gradient(145deg,#67e8f9 0%,#22d3ee 40%,#06b6d4 100%)"><div class="deco d1"></div><div class="deco d2"></div><div class="ttl">Decarbonization<br>Plan</div></div>
+      <div class="sol-card" style="background:linear-gradient(145deg,#c084fc 0%,#a855f7 50%,#7c3aed 100%)"><div class="deco d1"></div><div class="deco d2"></div><div class="ttl">SBTi Targets</div></div>
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="h-block">Feature cards — flat fill, stroked icon, title bottom</div>
+    <div class="feat-row">
+      <div class="feat-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+        <p class="ttl">Certified<br>professionals</p>
+      </div>
+      <div class="feat-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2"/><path d="m9 14 2 2 4-4"/></svg>
+        <p class="ttl">Auditable<br>technology</p>
+      </div>
+      <div class="feat-card">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/></svg>
+        <p class="ttl">Global<br>compliance</p>
+      </div>
+    </div>
+
+    <div class="page__footer">
+      <div>07 · Components</div><div>09</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 10. BRAND MOTIFS ───────────────────────────── -->
+<section class="page" data-screen-label="10 Brand motifs">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">08 · Brand motifs</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Brand</div>
+    <h2 class="h-section">The blob &amp; the rings</h2>
+    <p class="lede">Two motifs do most of the brand-recognition work. Use one or the other — never both — when establishing a hero.</p>
+
+    <div class="h-block">Hero blob — the top-left ellipse</div>
+    <div class="blob-stage">
+      <div class="blob"></div>
+      <div class="hl">Create and manage your decarbonization strategy</div>
+      <div class="sub">Integrated solution for emissions inventories, SBTi targets and decarbonization plans.</div>
+      <div class="cta">Schedule a demo</div>
+    </div>
+    <p class="body" style="margin-top:3mm; max-width:155mm;">A 90vw × 185vh ellipse positioned top-left of the hero, bleeding off both edges. Pure <code style="font-family:ui-monospace,monospace">#210856</code> fill, no gradient. On mobile it becomes a flat rectangle covering the full viewport.</p>
+
+    <div style="height:5mm"></div>
+    <div class="h-block">Concentric gradient rings — used on solution detail pages</div>
+    <div style="background:var(--climoo-purple-700); border-radius:5mm; height:60mm; position:relative; overflow:hidden;">
+      <div style="position:absolute; width:230mm; height:230mm; top:30mm; left:60mm; border-radius:50%; border:2px solid transparent; background:linear-gradient(#341472,#341472) padding-box,linear-gradient(to bottom,#62d0e5 0%,#9354e0 50%,#371776 100%) border-box;"></div>
+      <div style="position:absolute; width:180mm; height:180mm; top:45mm; left:80mm; border-radius:50%; border:2px solid transparent; background:linear-gradient(#341472,#341472) padding-box,linear-gradient(to bottom,#62d0e5 0%,#9354e0 50%,#371776 100%) border-box;"></div>
+      <div style="position:absolute; width:130mm; height:130mm; top:60mm; left:100mm; border-radius:50%; border:2px solid transparent; background:linear-gradient(#341472,#341472) padding-box,linear-gradient(to bottom,#62d0e5 0%,#9354e0 50%,#371776 100%) border-box;"></div>
+      <div style="position:absolute; left:8mm; top:14mm; color:#fff; font-family:var(--climoo-font-heading); font-weight:700; font-size:14pt; max-width:80mm; line-height:1.1;">Climate risk analysis aligned with TCFD</div>
+      <div style="position:absolute; left:8mm; top:34mm; color:rgba(255,255,255,0.85); font-family:var(--climoo-font-body); font-size:8pt; line-height:1.4; max-width:75mm;">Identify and assess climate-related risks and opportunities in line with the recommendations of the TCFD.</div>
+    </div>
+    <p class="body" style="margin-top:3mm; max-width:155mm;">Four nested rings drawn with a <code style="font-family:ui-monospace,monospace">padding-box / border-box</code> gradient-border trick so the stroke itself fades from cyan → violet → purple. Built only at scale on solution pages.</p>
+
+    <div class="page__footer">
+      <div>08 · Brand motifs</div><div>10</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 11. LOGOS & CLIENTS ───────────────────────────── -->
+<section class="page" data-screen-label="11 Logos">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">09 · Logos &amp; marks</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Brand</div>
+    <h2 class="h-section">Wordmark &amp; trust signals</h2>
+    <p class="lede">The Climoo logo is a single horizontal wordmark, in white on dark or dark on light. Trust signals come in two flavors: customer logos and framework / standards logos.</p>
+
+    <div class="h-block">Logo — horizontal wordmark</div>
+    <div class="logo-row">
+      <div>
+        <div class="logo-cell"><img src="assets/logos/horizontal-logo-dark.png" alt="Climoo dark"></div>
+        <div class="mono" style="margin-top:1.5mm; text-align:center;">horizontal-logo-dark.png · on light bg</div>
+      </div>
+      <div>
+        <div class="logo-cell dark"><img src="assets/logos/horizontal-logo.png" alt="Climoo white"></div>
+        <div class="mono" style="margin-top:1.5mm; text-align:center;">horizontal-logo.png · on dark bg</div>
+      </div>
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="h-block">Client logos — used on the trusted-by strip</div>
+    <div class="client-strip">
+      <img src="assets/clients/eurofarma.png" alt="Eurofarma">
+      <img src="assets/clients/movida.png" alt="Movida">
+      <img src="assets/clients/mills.png" alt="Mills">
+      <img src="assets/clients/rd-saude.png" alt="RD Saúde">
+      <img src="assets/clients/special-dog.png" alt="Special Dog">
+      <img src="assets/clients/company-1.png" alt="Client">
+      <img src="assets/clients/company-3.png" alt="Client">
+      <img src="assets/clients/company-4.png" alt="Client">
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="h-block">Standards bar — framework / regulatory alignment</div>
+    <div class="standards-bar">
+      <div class="ttl">Comply with national &amp; international standards</div>
+      <img src="assets/standards/ghg.png" alt="GHG Protocol">
+      <img src="assets/standards/cdp.png" alt="CDP">
+      <img src="assets/standards/tcfd.png" alt="TCFD">
+      <img src="assets/standards/ifrs.png" alt="IFRS">
+    </div>
+
+    <div class="page__footer">
+      <div>09 · Logos &amp; marks</div><div>11</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 12. ICONOGRAPHY ───────────────────────────── -->
+<section class="page" data-screen-label="12 Iconography">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">10 · Iconography</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Brand</div>
+    <h2 class="h-section">Outlined, 1.5–2px stroke</h2>
+    <p class="lede">Climoo's production site mixes Heroicons-outline, Material-outlined and Feather (via <code style="font-family:ui-monospace,monospace">react-icons</code>). For design-system artifacts use Lucide — visually identical metaphors and stroke weight.</p>
+
+    <div class="h-block">Sample set</div>
+    <div class="icon-grid">
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></div><div class="icon-cap">chevron-down</div></div>
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg></div><div class="icon-cap">menu</div></div>
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></div><div class="icon-cap">x</div></div>
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15 15 0 0 1 0 20"/><path d="M12 2a15 15 0 0 0 0 20"/></svg></div><div class="icon-cap">globe</div></div>
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div><div class="icon-cap">shield-check</div></div>
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="18" rx="2"/><path d="M9 4V2h6v2"/><path d="m9 14 2 2 4-4"/></svg></div><div class="icon-cap">clipboard-check</div></div>
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div><div class="icon-cap">instagram</div></div>
+      <div><div class="icon-cell"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg></div><div class="icon-cap">linkedin</div></div>
+    </div>
+
+    <div style="height:5mm"></div>
+    <div class="h-block">Usage rules</div>
+    <div class="ufull">
+      <div class="urow"><div class="uk">stroke-width</div><div class="uv">1.5–2px. Never filled-solid (except the WhatsApp icon in the footer).</div></div>
+      <div class="urow"><div class="uk">size</div><div class="uv">16–24px for inline icons; 36px for feature-card hero icons.</div></div>
+      <div class="urow"><div class="uk">color</div><div class="uv">Default inherits text color. Feature cards override to <code>#7C3AED</code> bright violet.</div></div>
+      <div class="urow"><div class="uk">accessibility</div><div class="uv">Always <code>aria-hidden="true"</code> if the icon sits next to a text label.</div></div>
+      <div class="urow"><div class="uk">emoji</div><div class="uv">Never. The Climoo voice does not use emoji in UI or marketing.</div></div>
+    </div>
+
+    <div class="page__footer">
+      <div>10 · Iconography</div><div>12</div>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────── 13. VOICE — DO/DON'T ───────────────────────────── -->
+<section class="page" data-screen-label="13 Voice">
+  <div class="page__header">
+    <div class="wm">climoo</div>
+    <div class="crumb">11 · Voice — do &amp; don't</div>
+  </div>
+  <div class="page__content">
+    <div class="eyebrow">Voice</div>
+    <h2 class="h-section">Concrete moves, &amp; what to skip</h2>
+    <p class="lede">Climoo writes plainly around technical acronyms. Sentence-case everything, address the customer directly, write as "we", problem-then-solution.</p>
+
+    <div class="ddrow">
+      <div class="ddbox do">
+        <h5>Do</h5>
+        <ul>
+          <li>Sentence-case headlines: <i>"Create and manage your decarbonization strategy"</i></li>
+          <li>Address the reader as <b>you</b>; the company as <b>we</b></li>
+          <li>Use acronyms (SBTi, GHG, TCFD, IFRS, CSRD) without explaining them</li>
+          <li>Frame a problem before pitching the solution</li>
+          <li>Keep card descriptions under ~25 words</li>
+          <li>Quote real numbers (200+ companies, 15 countries, 30-day free trial)</li>
+        </ul>
+      </div>
+      <div class="ddbox dont">
+        <h5>Don't</h5>
+        <ul>
+          <li>No exclamation points outside FAQ / support reply contexts</li>
+          <li>No emoji in UI, headlines, or body copy</li>
+          <li>No climate-doom or urgency framing ("the planet is dying")</li>
+          <li>No tech-bro language ("disrupt", "10x", "revolutionize")</li>
+          <li>No "AI-powered" framing — Climoo leads on expertise + auditability</li>
+          <li>No Title Case in headlines (reserved for product / proper nouns)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="h-block">Phrase bank — quote freely</div>
+    <div class="quotes">
+      <div class="q">"Create and manage your decarbonization strategy."</div>
+      <div class="q">"Centralize your emissions data — eliminate scattered spreadsheets."</div>
+      <div class="q">"ESG reports without rework."</div>
+      <div class="q">"More clarity, less effort."</div>
+      <div class="q">"Built to work from day one."</div>
+      <div class="q">"This isn't lack of climate commitment. It's lack of a tool made for your business."</div>
+    </div>
+
+    <div style="height:6mm"></div>
+    <div class="h-block">Pattern: problem → solution</div>
+    <p class="body" style="max-width:155mm">Climoo's marketing site uses an explicit two-beat: first call out a <b style="color:var(--climoo-text-1)">problem the reader recognizes</b> ("fragmented data", "inconsistent reports", "slow manual collection"), then position the platform as <b style="color:var(--climoo-text-1)">the fix</b>. Reach for this structure when writing new copy — it's load-bearing.</p>
+
+    <div class="page__footer">
+      <div>11 · Voice — do &amp; don't · End</div><div>13</div>
+    </div>
+  </div>
+</section>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Components — Header pill (scrolled)</title>
+<link rel="stylesheet" href="_preview.css">
+</head>
+<body>
+<div class="card">
+
+<style>
+.bg{background:#e4ebf0;padding:24px 18px;border-radius:16px;position:relative;}
+.bg::before{content:'';position:absolute;left:-10%;top:-30%;width:55%;height:170%;background:radial-gradient(closest-side,#210856,transparent);border-radius:50%;opacity:0.6;}
+.pill{position:relative;background:rgba(33,8,86,0.6);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-radius:100px;height:60px;padding:0 22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 4px 32px rgba(0,0,0,0.3);}
+.logo{color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-weight:700;font-size:18px;letter-spacing:-0.02em;}
+.nav{display:flex;gap:24px;color:#fff;font-family:'Outfit',sans-serif;font-size:14px;font-weight:500;}
+.btn-cta{background:#210856;color:#fff;border:none;height:38px;padding:0 18px;border-radius:99px;font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;}
+</style>
+<div class="bg">
+  <div class="pill">
+    <div class="logo">climoo</div>
+    <div class="nav"><span>Solutions ⌄</span><span>About</span><span>Insights</span></div>
+    <button class="btn-cta">Schedule a demo</button>
+  </div>
+</div>
+<div class="mono" style="margin-top:8px;color:#6b7280;">backdrop-filter:blur(20px) · rgba(33,8,86,.6) · radius 99 · shadow 0 4 32 rgba(0,0,0,.3)</div>
+</div></body></html>

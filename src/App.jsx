@@ -148,15 +148,20 @@ export default function App() {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
-      <Sider theme="light" width={248} style={{ borderRight: '1px solid #f0f0f0' }}>
-        <div className="px-5 py-4 flex flex-col leading-tight">
-          <span className="text-lg font-bold text-[#210856]">Climoo</span>
-          <span className="text-xs text-gray-500">Plano de Descarbonização</span>
+      <Sider
+        theme="light"
+        width={252}
+        className="climoo-sider"
+        style={{ borderRight: '1px solid #e5e7eb' }}
+      >
+        <div className="px-5 pt-5 pb-4 flex flex-col gap-1">
+          <img src="/climoo-logo.png" alt="Climoo" className="h-7 w-auto self-start" />
+          <span className="text-xs text-gray-500 pl-0.5">Plano de Descarbonização</span>
         </div>
         <Menu
           mode="inline"
           selectedKeys={[selectedKey]}
-          style={{ borderInlineEnd: 'none' }}
+          style={{ borderInlineEnd: 'none', paddingTop: 4 }}
           items={NAV.map((n) => ({
             key: n.key,
             icon: n.icon,
@@ -167,14 +172,17 @@ export default function App() {
 
       <Layout>
         <Header
-          style={{ background: '#fff', borderBottom: '1px solid #f0f0f0', paddingInline: 24 }}
+          style={{ background: '#fff', borderBottom: '1px solid #eef0f3', paddingInline: 24 }}
           className="flex items-center justify-between"
         >
-          <Text strong className="text-[#210856]">Ferramenta de Descarbonização</Text>
+          <Text strong className="climoo-wordmark text-[#210856]" style={{ fontSize: 16 }}>
+            Ferramenta de Descarbonização
+          </Text>
           <CompanyPicker />
         </Header>
+        <div className="climoo-accent-bar" />
 
-        <Content style={{ padding: 24, background: '#f7f7fb' }}>
+        <Content style={{ padding: 24 }}>
           <Routes>
             <Route path="/" element={<Navigate to="/inventory" replace />} />
             {NAV.map((n) => (

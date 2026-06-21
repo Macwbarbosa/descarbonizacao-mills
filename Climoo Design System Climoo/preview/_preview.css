@@ -1,0 +1,14 @@
+/* Preview-card scaffolding. Each card is ~700px wide, content-height. */
+@import url("../colors_and_type.css");
+
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #f7f9fb; font-family: var(--climoo-font-body); color: var(--climoo-text-1); -webkit-font-smoothing: antialiased; }
+body { display: flex; align-items: flex-start; justify-content: flex-start; }
+.card { width: 700px; padding: 24px; background: #ffffff; }
+.row { display: flex; gap: 12px; flex-wrap: wrap; }
+.col { display: flex; flex-direction: column; }
+.lbl { font-family: var(--climoo-font-body); font-size: 11px; color: var(--climoo-text-5); margin-top: 8px; letter-spacing: 0; }
+.lbl b { color: var(--climoo-text-2); font-weight: 600; display: block; font-size: 12px; }
+.mono { font-family: ui-monospace, "SF Mono", Consolas, monospace; font-size: 11px; color: var(--climoo-text-5); }
+.swatch { width: 116px; height: 96px; border-radius: 12px; display: flex; align-items: flex-end; padding: 12px; color: white; font-family: var(--climoo-font-body); font-size: 11px; font-weight: 600; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04); }
+.swatch--dark-text { color: var(--climoo-text-1); text-shadow: none; }
