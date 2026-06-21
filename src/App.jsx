@@ -11,6 +11,8 @@ import {
   AppstoreOutlined,
   BankOutlined,
   PlusOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
 } from '@ant-design/icons';
 
 import { useAuthStore } from '@/features/auth/shared/store/authStore';
@@ -145,18 +147,34 @@ function CompanyPicker() {
 export default function App() {
   const location = useLocation();
   const selectedKey = NAV.find((n) => location.pathname.startsWith(n.key))?.key || '/inventory';
+  const [collapsed, setCollapsed] = useState(false);
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
         theme="light"
         width={252}
+        collapsedWidth={72}
+        collapsible
+        collapsed={collapsed}
+        onCollapse={setCollapsed}
+        trigger={null}
+        breakpoint="lg"
         className="climoo-sider"
         style={{ borderRight: '1px solid #e5e7eb' }}
       >
-        <div className="px-5 pt-5 pb-4 flex flex-col gap-1">
-          <img src="/climoo-logo.png" alt="Climoo" className="h-7 w-auto self-start" />
-          <span className="text-xs text-gray-500 pl-0.5">Plano de Descarbonização</span>
+        <div
+          className={`pt-5 pb-4 flex items-center ${collapsed ? 'justify-center px-0' : 'px-5'}`}
+          style={{ height: 76 }}
+        >
+          {collapsed ? (
+            <img src="/climoo-ring.png" alt="Climoo" className="h-9 w-9" />
+          ) : (
+            <div className="flex flex-col gap-1">
+              <img src="/climoo-logo.png" alt="Climoo" className="h-7 w-auto self-start" />
+              <span className="text-xs text-gray-500 pl-0.5">Plano de Descarbonização</span>
+            </div>
+          )}
         </div>
         <Menu
           mode="inline"
@@ -175,9 +193,18 @@ export default function App() {
           style={{ background: '#fff', borderBottom: '1px solid #eef0f3', paddingInline: 24 }}
           className="flex items-center justify-between"
         >
-          <Text strong className="climoo-wordmark text-[#210856]" style={{ fontSize: 16 }}>
-            Ferramenta de Descarbonização
-          </Text>
+          <div className="flex items-center gap-3">
+            <Button
+              type="text"
+              aria-label={collapsed ? 'Expandir menu' : 'Recolher menu'}
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+              onClick={() => setCollapsed((v) => !v)}
+              className="text-[#210856]"
+            />
+            <Text strong className="climoo-wordmark text-[#210856]" style={{ fontSize: 16 }}>
+              Ferramenta de Descarbonização
+            </Text>
+          </div>
           <CompanyPicker />
         </Header>
         <div className="climoo-accent-bar" />
