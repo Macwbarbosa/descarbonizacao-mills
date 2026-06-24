@@ -5,22 +5,22 @@
  * navegador e servem apenas para restringir o acesso casual à demonstração.
  * Para autenticação de verdade, use o Supabase Auth.
  *
- * Para alterar: edite a lista de e-mails e/ou a senha abaixo.
+ * Para alterar: edite o mapa de e-mail → senha abaixo (uma senha por usuário).
  */
 
-/** E-mails autorizados (comparação sem distinção de maiúsculas/espaços). */
-export const ALLOWED_EMAILS = [
-    'psleal@mills.com.br',
-    'monique.cesila@mills.com.br',
-    'mac@climoo.com.br',
-];
+/** Usuários autorizados: e-mail (em minúsculas) → senha. */
+export const USERS = {
+    'psleal@mills.com.br': 'M6N9n57Ea6Qw7U',
+    'monique.cesila@mills.com.br': 'SnY6xZE3genivX',
+    'mac@climoo.com.br': 'CCxxQB5pWQu9nN',
+};
 
-/** Senha compartilhada por todos os e-mails autorizados. */
-export const SHARED_PASSWORD = 'dvAD5nvK3q5RFecR';
+/** E-mails autorizados (derivado de USERS). */
+export const ALLOWED_EMAILS = Object.keys(USERS);
 
-/** Valida um par e-mail/senha contra a lista autorizada. */
+/** Valida um par e-mail/senha. Retorna o e-mail normalizado se válido, senão null. */
 export const checkCredentials = (email, password) => {
     const normalized = String(email || '').trim().toLowerCase();
-    const ok = ALLOWED_EMAILS.includes(normalized) && password === SHARED_PASSWORD;
-    return ok ? normalized : null;
+    const expected = USERS[normalized];
+    return expected && password === expected ? normalized : null;
 };
