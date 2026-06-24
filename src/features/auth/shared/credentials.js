@@ -16,7 +16,7 @@ export const ALLOWED_EMAILS = [
 ];
 
 /** Senha compartilhada por todos os e-mails autorizados. */
-export const SHARED_PASSWORD = 'climoo2026';
+export const SHARED_PASSWORD = 'dvAD5nvK3q5RFecR';
 
 /** Valida um par e-mail/senha contra a lista autorizada. */
 export const checkCredentials = (email, password) => {
