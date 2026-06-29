@@ -384,8 +384,7 @@ function ScenariosPage() {
                 </div>
                 <div className="flex items-center gap-3 flex-wrap">
                     <span className="text-xs text-gray-500">
-                        Ano-meta <span className="font-medium text-[#210856]">{targetYear}</span>{' '}
-                        <span className="text-gray-400">(da meta)</span>
+                        Ano-alvo <span className="font-medium text-[#210856]">{targetYear}</span>
                     </span>
                     {metaTargets.length > 0 && (
                         <span className="text-xs text-gray-500">
