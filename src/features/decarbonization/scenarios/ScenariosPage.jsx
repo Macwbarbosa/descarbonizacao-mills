@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Button, Spin, Alert, Select, Switch, Segmented, Row, Col, Tooltip, Modal, Input, Empty, message } from 'antd';
-import { SaveOutlined, PlusOutlined, CloseOutlined, FullscreenOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, CloseOutlined, FullscreenOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import useScenariosStore from './store/useScenariosStore';
 import useProjectsStore from '../projects/store/useProjectsStore';
@@ -24,7 +24,6 @@ import {
     metaScopeLabels,
     SCOPES,
 } from './utils/scenarioCalc';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import { metaCoveredActivities } from '../shared/metaScopes';
 import ScenarioKpis from './components/ScenarioKpis';
 import ScenarioProjectsColumn from './components/ScenarioProjectsColumn';
@@ -75,7 +74,6 @@ function ScenariosPage() {
     const technologies = useTechnologyBankStore((s) => s.technologies);
 
     const [focusMetaId, setFocusMetaId] = useState(null);
-    const [saving, setSaving] = useState(false);
     const [zoomChart, setZoomChart] = useState(null); // 'cascata' | 'linhas' | 'macc'
     const [editingId, setEditingId] = useState(null); // cenário em edição de nome
     const [editName, setEditName] = useState('');
@@ -270,17 +268,6 @@ function ScenariosPage() {
         [scenariosOfMeta, scopeSet, targetYear, ctx, projectsById, initiativesById, bauTarget, focusMeta, activeScenarioId]
     );
 
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            const data = await saveCompanyToProject();
-            message.success(`Salvo no projeto: decarbonization-data/${data.cnpj}.json`);
-        } catch (e) {
-            message.warning('Salvo localmente. Para gravar o arquivo no projeto, rode em npm run dev.');
-        } finally {
-            setSaving(false);
-        }
-    };
 
     // Renomear cenário (edição inline no chip).
     const startEdit = (s) => {
@@ -425,9 +412,6 @@ function ScenariosPage() {
                     <span className="text-xs text-gray-500 flex items-center gap-1">
                         Comparar cenários <Switch size="small" checked={compare} onChange={setCompare} />
                     </span>
-                    <Button type="primary" icon={<SaveOutlined />} onClick={handleSave} loading={saving} className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6" size="large">
-                        Salvar no projeto (JSON)
-                    </Button>
                 </div>
             </div>
 

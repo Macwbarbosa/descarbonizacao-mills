@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Spin, Empty, message } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import useDriversStore from './store/useDriversStore';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
 import DriverDetail from './components/DriverDetail';
 import PasteAbsolutesModal from './components/PasteAbsolutesModal';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 
 /**
  * Tela cheia de uma Variável de Crescimento (rota `/drivers/:id`).
@@ -20,11 +19,9 @@ function DriverDetailPage() {
 
     const drivers = useDriversStore((s) => s.drivers);
     const loading = useDriversStore((s) => s.loading);
-    const saving = useDriversStore((s) => s.saving);
     const loadDrivers = useDriversStore((s) => s.loadDrivers);
     const patchDriver = useDriversStore((s) => s.patchDriver);
     const removeDriver = useDriversStore((s) => s.removeDriver);
-    const savePlan = useDriversStore((s) => s.savePlan);
 
     const { baseYear, netZeroYear } = usePlanTargetsStore((s) => s.params);
     const endYear = netZeroYear;
@@ -45,19 +42,6 @@ function DriverDetailPage() {
         navigate('/drivers');
     };
 
-    const handleSave = async () => {
-        try {
-            await savePlan();
-            try {
-                const data = await saveCompanyToProject();
-                message.success(`Salvo no projeto: decarbonization-data/${data.cnpj}.json`);
-            } catch (fileErr) {
-                message.warning('Salvo localmente. Para gravar o arquivo no projeto, rode em npm run dev.');
-            }
-        } catch (err) {
-            message.error('Erro ao salvar. Tente novamente.');
-        }
-    };
 
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
@@ -82,17 +66,6 @@ function DriverDetailPage() {
                 <div className="flex items-center gap-2">
                     <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/drivers')}>
                         Voltar
-                    </Button>
-                    <Button
-                        type="primary"
-                        icon={<SaveOutlined />}
-                        onClick={handleSave}
-                        loading={saving}
-                        disabled={!driver}
-                        className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6"
-                        size="large"
-                    >
-                        Salvar alterações
                     </Button>
                 </div>
             </div>

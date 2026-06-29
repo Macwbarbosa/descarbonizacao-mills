@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button, Spin, Empty, Tag, message } from 'antd';
-import { SaveOutlined, ArrowLeftOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import useProjectsStore from './store/useProjectsStore';
 import useBauStore from '../bau/store/useBauStore';
 import useDriversStore from '../drivers/store/useDriversStore';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
 import useTechnologyBankStore from '../../../store/technologyBankStore';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import { mergedInitiatives } from './utils/initiativeCatalog';
 import { activitiesForProject, metaNamesOf } from '../shared/metaScopes';
 import ProjectEditor from './components/ProjectEditor';
@@ -68,18 +67,6 @@ function ProjectDetailPage() {
     );
     const metaNames = project ? metaNamesOf(project, metasById) : [];
 
-    const [saving, setSaving] = React.useState(false);
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            const data = await saveCompanyToProject();
-            message.success(`Salvo no projeto: decarbonization-data/${data.cnpj}.json`);
-        } catch (e) {
-            message.warning('Salvo localmente. Para gravar o arquivo no projeto, rode em npm run dev.');
-        } finally {
-            setSaving(false);
-        }
-    };
 
     const handleRemove = (projectId) => {
         removeProject(projectId);
@@ -116,17 +103,6 @@ function ProjectDetailPage() {
                 <div className="flex items-center gap-2">
                     <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/projects')}>
                         Voltar
-                    </Button>
-                    <Button
-                        type="primary"
-                        icon={<SaveOutlined />}
-                        onClick={handleSave}
-                        loading={saving}
-                        disabled={!project}
-                        className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6"
-                        size="large"
-                    >
-                        Salvar no projeto (JSON)
                     </Button>
                 </div>
             </div>

@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo } from 'react';
-import { Button, Spin, Alert, message } from 'antd';
-import { SaveOutlined } from '@ant-design/icons';
+import { Spin, Alert, message } from 'antd';
 import usePlanTargetsStore from './store/usePlanTargetsStore';
 import useDriversStore from '../drivers/store/useDriversStore';
 import useInventoryStore from '../inventory/store/useInventoryStore';
@@ -8,7 +7,6 @@ import { aggregateByScope, activitiesForYear } from '../inventory/utils/inventor
 import { indicePorAno } from '../drivers/utils/driverIndex';
 import { computeMetaTarget } from './services/sbtiTargetService';
 import { validateMetas } from './utils/metaValidation';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import PlanTimeframePanel from './components/PlanTimeframePanel';
 import MetasPanel from './components/MetasPanel';
 import CoverageOverviewPanel from './components/CoverageOverviewPanel';
@@ -23,7 +21,6 @@ function TargetsTimeframePage() {
     const metas = usePlanTargetsStore((s) => s.metas);
     const selectedMetaId = usePlanTargetsStore((s) => s.selectedMetaId);
     const loading = usePlanTargetsStore((s) => s.loading);
-    const saving = usePlanTargetsStore((s) => s.saving);
     const error = usePlanTargetsStore((s) => s.error);
     const loadPlanData = usePlanTargetsStore((s) => s.loadPlanData);
     const selectMeta = usePlanTargetsStore((s) => s.selectMeta);
@@ -31,7 +28,6 @@ function TargetsTimeframePage() {
     const applySbtiTemplate = usePlanTargetsStore((s) => s.applySbtiTemplate);
     const patchMeta = usePlanTargetsStore((s) => s.patchMeta);
     const removeMeta = usePlanTargetsStore((s) => s.removeMeta);
-    const savePlan = usePlanTargetsStore((s) => s.savePlan);
 
     const drivers = useDriversStore((s) => s.drivers);
     const loadDrivers = useDriversStore((s) => s.loadDrivers);
@@ -86,20 +82,6 @@ function TargetsTimeframePage() {
         [metas, baselineByScope, params]
     );
 
-    const handleSave = async () => {
-        try {
-            await savePlan();
-            try {
-                const data = await saveCompanyToProject();
-                message.success(`Plano salvo no projeto: decarbonization-data/${data.cnpj}.json`);
-            } catch (fileErr) {
-                message.warning('Plano salvo localmente. Para gravar o arquivo no projeto, rode em npm run dev.');
-            }
-        } catch (err) {
-            message.error('Erro ao salvar o plano. Tente novamente.');
-        }
-    };
-
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
@@ -114,16 +96,6 @@ function TargetsTimeframePage() {
                         por si, gerando sua própria trajetória.
                     </p>
                 </div>
-                <Button
-                    type="primary"
-                    icon={<SaveOutlined />}
-                    onClick={handleSave}
-                    loading={saving}
-                    className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6"
-                    size="large"
-                >
-                    Salvar plano
-                </Button>
             </div>
 
             {error && <Alert className="mb-4" type="error" showIcon message={error} />}

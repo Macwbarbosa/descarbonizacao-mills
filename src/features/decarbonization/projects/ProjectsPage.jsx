@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Spin, Alert, Empty, Table, Tag, Select, message } from 'antd';
-import { SaveOutlined, PlusOutlined, RightOutlined } from '@ant-design/icons';
+import { PlusOutlined, RightOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import useProjectsStore from './store/useProjectsStore';
 import useBauStore from '../bau/store/useBauStore';
 import useDriversStore from '../drivers/store/useDriversStore';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
 import useTechnologyBankStore from '../../../store/technologyBankStore';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import { mergedInitiatives } from './utils/initiativeCatalog';
 import { abatementInYear, coverageInYear, projectFinanceSummary } from './utils/projectAbatement';
 import { metaNamesOf, projectMetaIds } from '../shared/metaScopes';
@@ -55,7 +54,6 @@ function ProjectsPage() {
     const technologies = useTechnologyBankStore((s) => s.technologies);
 
     const [metaFilter, setMetaFilter] = useState(''); // '', metaId ou NONE
-    const [saving, setSaving] = useState(false);
 
     useEffect(() => {
         loadPlanData().catch(() => {});
@@ -101,17 +99,6 @@ function ProjectsPage() {
         if (id) navigate(`/projects/${id}`);
     };
 
-    const handleSave = async () => {
-        setSaving(true);
-        try {
-            const data = await saveCompanyToProject();
-            message.success(`Salvo no projeto: decarbonization-data/${data.cnpj}.json`);
-        } catch (e) {
-            message.warning('Salvo localmente. Para gravar o arquivo no projeto, rode em npm run dev.');
-        } finally {
-            setSaving(false);
-        }
-    };
 
     const metaFilterOptions = [
         { value: '', label: 'Todas as metas' },
@@ -227,16 +214,6 @@ function ProjectsPage() {
                         (restrita aos escopos da meta). Abatimento = grupo × abrangência × eficácia.
                     </p>
                 </div>
-                <Button
-                    type="primary"
-                    icon={<SaveOutlined />}
-                    onClick={handleSave}
-                    loading={saving}
-                    className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6"
-                    size="large"
-                >
-                    Salvar no projeto (JSON)
-                </Button>
             </div>
 
             {error && <Alert className="mb-4" type="error" showIcon message={error} />}

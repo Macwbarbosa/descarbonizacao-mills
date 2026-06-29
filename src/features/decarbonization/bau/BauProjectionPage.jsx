@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { Button, Select, Spin, Alert, Upload, Tooltip, message } from 'antd';
-import { SaveOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import * as XLSX from 'xlsx';
 import ExcelJS from 'exceljs';
 import { Card } from '@/shared/components/ui/Card';
@@ -11,7 +11,6 @@ import { parseNumber } from '../inventory/utils/inventoryAggregate';
 import BauKpis from './components/BauKpis';
 import BauAreaChart from './components/BauAreaChart';
 import BauMatrix from './components/BauMatrix';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 
 /**
  * Etapa 4 — Projeção BAU. KPIs + área empilhada por escopo + matriz de vínculo
@@ -22,7 +21,6 @@ function BauProjectionPage() {
     const activities = useBauStore((s) => s.activities);
     const targetYear = useBauStore((s) => s.targetYear);
     const loading = useBauStore((s) => s.loading);
-    const saving = useBauStore((s) => s.saving);
     const error = useBauStore((s) => s.error);
     const loadActivities = useBauStore((s) => s.loadActivities);
     const setTargetYear = useBauStore((s) => s.setTargetYear);
@@ -30,7 +28,6 @@ function BauProjectionPage() {
     const setFactor = useBauStore((s) => s.setFactor);
     const bulkAssignCategory = useBauStore((s) => s.bulkAssignCategory);
     const applyLinks = useBauStore((s) => s.applyLinks);
-    const saveLinks = useBauStore((s) => s.saveLinks);
 
     const drivers = useDriversStore((s) => s.drivers);
     const loadDrivers = useDriversStore((s) => s.loadDrivers);
@@ -58,19 +55,6 @@ function BauProjectionPage() {
         return out;
     }, [baseYear, endYear]);
 
-    const handleSave = async () => {
-        try {
-            await saveLinks();
-            try {
-                const data = await saveCompanyToProject();
-                message.success(`Salvo no projeto: decarbonization-data/${data.cnpj}.json`);
-            } catch (fileErr) {
-                message.warning('Salvo localmente. Para gravar o arquivo no projeto, rode em npm run dev.');
-            }
-        } catch (err) {
-            message.error('Erro ao salvar. Tente novamente.');
-        }
-    };
 
     // Baixa modelo .xlsx (ExcelJS): coluna Driver com VALIDAÇÃO DE DADOS (lista suspensa).
     // Casamento no upload é por Escopo + Categoria + Atividade (sem id interno).
@@ -220,16 +204,6 @@ function BauProjectionPage() {
                             style={{ width: 90 }}
                         />
                     </div>
-                    <Button
-                        type="primary"
-                        icon={<SaveOutlined />}
-                        onClick={handleSave}
-                        loading={saving}
-                        className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6"
-                        size="large"
-                    >
-                        Salvar vínculos
-                    </Button>
                 </div>
             </div>
 

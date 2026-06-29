@@ -12,7 +12,6 @@ import useProjectsStore from '../projects/store/useProjectsStore';
 import { activityToProjectsMap } from '../projects/utils/projectAbatement';
 import { useEmissionsStore } from '../../emissions/emissions-table/store/emissionsStore';
 import { aggregateByScope, rowsToActivities, emissionsToInventory, activitiesForYear, yearsPresent, SCOPES } from './utils/inventoryAggregate';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import ActivityFormModal from './components/ActivityFormModal';
 
 const SCOPE_COLOR = { 'Escopo 1': '#5B6CB5', 'Escopo 2': '#C98A3A', 'Escopo 3': '#7AA05F' };
@@ -60,7 +59,6 @@ function InventoryPage() {
     const [scopeFilter, setScopeFilter] = useState('');
     const [modalOpen, setModalOpen] = useState(false);
     const [editing, setEditing] = useState(null);
-    const [saving, setSaving] = useState(false);
     const [importing, setImporting] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
     const [addYearOpen, setAddYearOpen] = useState(false);
@@ -105,17 +103,6 @@ function InventoryPage() {
         setEditing(null);
     };
 
-    const handleSaveToProject = async () => {
-        setSaving(true);
-        try {
-            const d = await saveCompanyToProject();
-            message.success(`Salvo no projeto: decarbonization-data/${d.cnpj}.json`);
-        } catch (e) {
-            message.warning('Salvo localmente. Para gravar o arquivo, rode em npm run dev.');
-        } finally {
-            setSaving(false);
-        }
-    };
 
     // Aplica linhas (objetos com cabeçalho) ao ano ativo (respeita coluna ano por linha).
     const applyRows = (rows) => {
@@ -323,9 +310,6 @@ function InventoryPage() {
                         Atividades emissoras por ano. Metas, BAU e Cenários usam o ano-base do plano ({baseYear}).
                     </p>
                 </div>
-                <Button type="primary" icon={<UploadOutlined />} onClick={handleSaveToProject} loading={saving} className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6" size="large">
-                    Salvar no projeto (JSON)
-                </Button>
             </div>
 
             <Row gutter={[12, 12]} className="mb-4">

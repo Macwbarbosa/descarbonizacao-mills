@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Spin, Alert, Empty, Table, Tag, Tooltip, message } from 'antd';
-import { SaveOutlined, PlusOutlined, WarningOutlined, RightOutlined } from '@ant-design/icons';
+import { PlusOutlined, WarningOutlined, RightOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import useDriversStore from './store/useDriversStore';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
 import Sparkline from './components/Sparkline';
 import { indicePorAno } from './utils/driverIndex';
 import { METHOD_LABELS } from './constants';
-import { saveCompanyToProject } from '../shared/decarbonizationExport';
 
 /**
  * Etapa 3 — Variáveis de Crescimento (drivers do BAU), em modo LISTA.
@@ -23,11 +22,9 @@ function DriversPage() {
 
     const drivers = useDriversStore((s) => s.drivers);
     const loading = useDriversStore((s) => s.loading);
-    const saving = useDriversStore((s) => s.saving);
     const error = useDriversStore((s) => s.error);
     const loadDrivers = useDriversStore((s) => s.loadDrivers);
     const addDriver = useDriversStore((s) => s.addDriver);
-    const savePlan = useDriversStore((s) => s.savePlan);
 
     // Ano-base e horizonte — fonte única: tela Metas & Período.
     const { baseYear, netZeroYear } = usePlanTargetsStore((s) => s.params);
@@ -50,19 +47,6 @@ function DriversPage() {
         if (id) navigate(`/drivers/${id}`);
     };
 
-    const handleSave = async () => {
-        try {
-            await savePlan();
-            try {
-                const data = await saveCompanyToProject();
-                message.success(`Salvo no projeto: decarbonization-data/${data.cnpj}.json`);
-            } catch (fileErr) {
-                message.warning('Salvo localmente. Para gravar o arquivo no projeto, rode em npm run dev.');
-            }
-        } catch (err) {
-            message.error('Erro ao salvar. Tente novamente.');
-        }
-    };
 
     const fmt = (v) =>
         typeof v === 'number' ? v.toLocaleString('pt-BR', { maximumFractionDigits: 2 }) : '—';
@@ -171,16 +155,6 @@ function DriversPage() {
                 <div className="flex items-center gap-2">
                     <Button icon={<PlusOutlined />} onClick={handleAdd} className="text-[#210856]">
                         Nova variável
-                    </Button>
-                    <Button
-                        type="primary"
-                        icon={<SaveOutlined />}
-                        onClick={handleSave}
-                        loading={saving}
-                        className="bg-[#210856] border-[#210856] hover:bg-[#2d0a6b] h-10 px-6"
-                        size="large"
-                    >
-                        Salvar alterações
                     </Button>
                 </div>
             </div>
