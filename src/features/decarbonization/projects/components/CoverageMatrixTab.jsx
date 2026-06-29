@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Select, Tag, Tooltip, Checkbox, Empty, Button, Input } from 'antd';
-import { WarningOutlined, CaretRightOutlined, CaretDownOutlined, SearchOutlined } from '@ant-design/icons';
+import { WarningOutlined, CaretRightOutlined, CaretDownOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import { SCOPES, SCOPE_COLORS, activityEmissionByYear } from '../../bau/utils/bauProjection';
 import { activityToProjectsMap, coverageInYear, abatementByActivityInYear } from '../utils/projectAbatement';
@@ -108,7 +108,7 @@ ActivityYearDetail.propTypes = {
  * abre o detalhe ano-a-ano (Emissão · Abrangência · Redução), no padrão da
  * Projeção BAU. Mantém "Coberta por" e "Atribuir a projeto".
  */
-function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, endYear, onAssign }) {
+function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, endYear, onAssign, currentProjectId }) {
     const [onlyOrphans, setOnlyOrphans] = useState(false);
     const [coverFilter, setCoverFilter] = useState(''); // filtra por projeto que cobre (coluna "Coberta por")
     const [q, setQ] = useState('');
@@ -121,6 +121,14 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
     const projectsById = useMemo(() => Object.fromEntries(projects.map((p) => [p.id, p])), [projects]);
     const projectName = (id) => projectsById[id]?.name || id;
     const orphanCount = activities.filter((a) => !(map[a.id] || []).length).length;
+
+    // Opções do filtro "Coberta por": apenas projetos que cobrem alguma atividade
+    // visível nesta matriz (que pode estar restrita aos escopos da meta do projeto).
+    const coverProjectOptions = useMemo(() => {
+        const ids = new Set();
+        activities.forEach((a) => (map[a.id] || []).forEach((pid) => ids.add(pid)));
+        return projects.filter((p) => ids.has(p.id));
+    }, [activities, map, projects]);
 
     const visible = useMemo(() => {
         let list = onlyOrphans ? activities.filter((a) => !(map[a.id] || []).length) : activities;
@@ -190,7 +198,7 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                     style={{ minWidth: 200 }}
                     showSearch
                     optionFilterProp="label"
-                    options={[{ value: '', label: 'Coberta por: todos' }, ...projects.map((p) => ({ value: p.id, label: `Coberta por: ${p.name}` }))]}
+                    options={[{ value: '', label: 'Coberta por: todos' }, ...coverProjectOptions.map((p) => ({ value: p.id, label: `Coberta por: ${p.name}` }))]}
                 />
                 {(query || coverFilter) && <span className="text-[11px] text-gray-400">{visible.length} resultado(s)</span>}
                 <span className="text-[11px] text-gray-400">Clique numa atividade para ver Emissão · Abrangência · Redução ano a ano.</span>
@@ -257,22 +265,39 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                                                                                     <span className="text-[11px] text-[#b9462f] italic">órfã</span>
                                                                                 ) : (
                                                                                     covering.map((pid) => (
-                                                                                        <Tag key={pid} className="rounded-full m-0 mr-1 mb-1 text-[10px]">
+                                                                                        <Tag
+                                                                                            key={pid}
+                                                                                            color={pid === currentProjectId ? 'purple' : undefined}
+                                                                                            className="rounded-full m-0 mr-1 mb-1 text-[10px]"
+                                                                                        >
                                                                                             {projectName(pid)}
                                                                                         </Tag>
                                                                                     ))
                                                                                 )}
                                                                             </td>
                                                                             <td className="px-3 py-2 text-left" onClick={stop}>
-                                                                                <Select
-                                                                                    size="small"
-                                                                                    placeholder="atribuir…"
-                                                                                    value={null}
-                                                                                    style={{ minWidth: 160 }}
-                                                                                    disabled={assignable.length === 0}
-                                                                                    options={assignable.map((p) => ({ value: p.id, label: p.name }))}
-                                                                                    onChange={(pid) => pid && onAssign(pid, a.id)}
-                                                                                />
+                                                                                <div className="flex items-center gap-1">
+                                                                                    {currentProjectId && !covering.includes(currentProjectId) && (
+                                                                                        <Button
+                                                                                            size="small"
+                                                                                            type="primary"
+                                                                                            icon={<PlusOutlined />}
+                                                                                            className="bg-[#210856] border-[#210856]"
+                                                                                            onClick={() => onAssign(currentProjectId, a.id)}
+                                                                                        >
+                                                                                            este projeto
+                                                                                        </Button>
+                                                                                    )}
+                                                                                    <Select
+                                                                                        size="small"
+                                                                                        placeholder="atribuir…"
+                                                                                        value={null}
+                                                                                        style={{ minWidth: 150 }}
+                                                                                        disabled={assignable.length === 0}
+                                                                                        options={assignable.map((p) => ({ value: p.id, label: p.name }))}
+                                                                                        onChange={(pid) => pid && onAssign(pid, a.id)}
+                                                                                    />
+                                                                                </div>
                                                                             </td>
                                                                         </tr>
                                                                         {actOpen && (
@@ -316,8 +341,9 @@ CoverageMatrixTab.propTypes = {
     baseYear: PropTypes.number.isRequired,
     endYear: PropTypes.number.isRequired,
     onAssign: PropTypes.func.isRequired,
+    currentProjectId: PropTypes.string,
 };
 
-CoverageMatrixTab.defaultProps = { initiatives: [] };
+CoverageMatrixTab.defaultProps = { initiatives: [], currentProjectId: null };
 
 export default CoverageMatrixTab;

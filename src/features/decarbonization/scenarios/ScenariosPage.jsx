@@ -283,6 +283,8 @@ function ScenariosPage() {
                 <ScenarioProjectsColumn
                     scenario={activeScenario}
                     projects={projects}
+                    metas={metas}
+                    focusMeta={focusMeta?.meta || null}
                     initiativesById={initiativesById}
                     ctx={ctx}
                     targetYear={targetYear}

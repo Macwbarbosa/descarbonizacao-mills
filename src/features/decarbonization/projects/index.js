@@ -1,4 +1,5 @@
 export { default as ProjectsPage } from './ProjectsPage';
+export { default as ProjectDetailPage } from './ProjectDetailPage';
 // Saídas públicas reutilizáveis pela Etapa 6 (Cenários/MACC):
 export {
     projectAbatementByYear, // abatimento por projeto por ano (barra da cascata / linha do cenário)

@@ -13,6 +13,7 @@ import ActivityGroupTree from './ActivityGroupTree';
 import CoverageCurveChart from './CoverageCurveChart';
 import AbatementPreviewChart from './AbatementPreviewChart';
 import InitiativeMemorialModal from './InitiativeMemorialModal';
+import { metaScopeLabels } from '../../shared/metaScopes';
 
 const labelCls = 'text-[10px] uppercase tracking-wide text-gray-500 block mb-1';
 const fmt = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
@@ -24,11 +25,27 @@ const yearOptions = (from, to) => {
     return out;
 };
 
-/** Editor de um Projeto: nome, aplicabilidade temporal, iniciativa, grupo de atividades, abrangência e preview do abatimento. */
-function ProjectEditor({ project, initiatives, activities, ctx, targetYear, onPatch, onRemove }) {
+/** Editor de um Projeto: nome, metas, aplicabilidade temporal, iniciativa, grupo de atividades, abrangência e preview do abatimento. */
+function ProjectEditor({ project, metas, initiatives, activities, ctx, targetYear, onPatch, onRemove }) {
     const [memorialOpen, setMemorialOpen] = useState(false);
     const initiative = initiatives.find((i) => i.id === project.initiativeId) || null;
     const isExclusive = initiative?.source === 'empresa';
+
+    const metaOptions = useMemo(() => (metas || []).map((m) => ({ value: m.id, label: m.name })), [metas]);
+    const metasById = useMemo(() => Object.fromEntries((metas || []).map((m) => [m.id, m])), [metas]);
+    // Escopos permitidos = união dos escopos das metas vinculadas (vazio = sem filtro).
+    const allowedScopes = useMemo(() => {
+        const set = new Set();
+        (project.metaIds || []).forEach((id) => metaScopeLabels(metasById[id]).forEach((s) => set.add(s)));
+        return [...set];
+    }, [project.metaIds, metasById]);
+    const outOfScopeCount = useMemo(() => {
+        if (allowedScopes.length === 0) return 0;
+        return (project.memberActivityIds || []).filter((id) => {
+            const s = ctx.activitiesById[id]?.scope;
+            return s && !allowedScopes.includes(s);
+        }).length;
+    }, [allowedScopes, project.memberActivityIds, ctx.activitiesById]);
 
     // Opções agrupadas por origem: catálogo global (Banco de tecnologias) +
     // eventuais iniciativas exclusivas pré-existentes. Aqui é SÓ consulta/atribuição
@@ -65,8 +82,9 @@ function ProjectEditor({ project, initiatives, activities, ctx, targetYear, onPa
         if (project.endYear < project.startYear) out.push('ano de fim anterior ao de início');
         const outOfRange = (project.coveragePoints || []).some((p) => p.year < project.startYear || p.year > project.endYear);
         if (outOfRange) out.push('há pontos de abrangência fora do intervalo início–fim');
+        if (outOfScopeCount > 0) out.push(`${outOfScopeCount} atividade(s) fora dos escopos da(s) meta(s) vinculada(s)`);
         return out;
-    }, [project, initiative, ctx]);
+    }, [project, initiative, ctx, outOfScopeCount]);
 
     // Pontos de abrangência (ordenados) + ações
     const points = [...(project.coveragePoints || [])].sort((a, b) => a.year - b.year);
@@ -89,6 +107,28 @@ function ProjectEditor({ project, initiatives, activities, ctx, targetYear, onPa
                     <Button danger icon={<DeleteOutlined />} onClick={() => onRemove(project.id)}>
                         Remover
                     </Button>
+                </Col>
+            </Row>
+
+            {/* Metas vinculadas (N:N) — definem os escopos do inventário disponíveis */}
+            <Row gutter={[12, 12]} className="mt-3">
+                <Col xs={24}>
+                    <span className={labelCls}>Metas vinculadas</span>
+                    <Select
+                        mode="multiple"
+                        allowClear
+                        value={project.metaIds || []}
+                        options={metaOptions}
+                        onChange={(v) => onPatch({ metaIds: v })}
+                        placeholder="Selecione a(s) meta(s) — define os escopos do inventário disponíveis"
+                        style={{ width: '100%' }}
+                        optionFilterProp="label"
+                    />
+                    <div className="text-[11px] text-gray-400 mt-1">
+                        {allowedScopes.length > 0
+                            ? `Inventário restrito a: ${allowedScopes.join(', ')}.`
+                            : 'Sem meta vinculada — todo o inventário fica disponível.'}
+                    </div>
                 </Col>
             </Row>
 
@@ -267,6 +307,7 @@ function ProjectEditor({ project, initiatives, activities, ctx, targetYear, onPa
 ProjectEditor.propTypes = {
     // eslint-disable-next-line react/forbid-prop-types
     project: PropTypes.object.isRequired,
+    metas: PropTypes.arrayOf(PropTypes.object), // eslint-disable-line react/forbid-prop-types
     initiatives: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
     activities: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
     // eslint-disable-next-line react/forbid-prop-types
@@ -275,5 +316,7 @@ ProjectEditor.propTypes = {
     onPatch: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
 };
+
+ProjectEditor.defaultProps = { metas: [] };
 
 export default ProjectEditor;

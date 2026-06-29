@@ -8,6 +8,8 @@ import { Card, StatCard } from '@/shared/components/ui/Card';
 import { useUIStore } from '@/store/uiStore';
 import useInventoryStore from './store/useInventoryStore';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
+import useProjectsStore from '../projects/store/useProjectsStore';
+import { activityToProjectsMap } from '../projects/utils/projectAbatement';
 import { useEmissionsStore } from '../../emissions/emissions-table/store/emissionsStore';
 import { aggregateByScope, rowsToActivities, emissionsToInventory, activitiesForYear, yearsPresent, SCOPES } from './utils/inventoryAggregate';
 import DecarbonizationDataBar from '../shared/DecarbonizationDataBar';
@@ -43,6 +45,12 @@ function InventoryPage() {
     const recentYear = usePlanTargetsStore((s) => s.params.recentYear);
     const setParam = usePlanTargetsStore((s) => s.setParam);
 
+    // Projetos (para a coluna "Projetos associados"): relação atividade → projeto(s).
+    const projects = useProjectsStore((s) => s.projects);
+    const loadProjects = useProjectsStore((s) => s.loadProjects);
+    const projectsByActivity = useMemo(() => activityToProjectsMap(projects), [projects]);
+    const projectNameById = useMemo(() => Object.fromEntries(projects.map((p) => [p.id, p.name])), [projects]);
+
     // Tabela de Emissões (módulo Emissões) — fonte opcional para preencher o inventário.
     const fetchEmissions = useEmissionsStore((s) => s.fetchEmissions);
     const fetchGroups = useEmissionsStore((s) => s.fetchGroups);
@@ -62,9 +70,10 @@ function InventoryPage() {
 
     useEffect(() => {
         loadInventory().catch(() => message.error('Erro ao carregar o inventário.'));
+        loadProjects().catch(() => {});
         // Busca os grupos do módulo de Emissões para o seletor de Grupo (cadastro de atividade).
         fetchGroups().catch(() => {});
-    }, [loadInventory, fetchGroups]);
+    }, [loadInventory, loadProjects, fetchGroups]);
 
     // Ano ativo padrão = ano-base do plano.
     useEffect(() => {
@@ -271,6 +280,23 @@ function InventoryPage() {
             render: (v) => <span className="tabular-nums">{fmt3(v)}</span>,
         },
         {
+            title: 'Projetos associados',
+            key: 'projects',
+            width: 220,
+            render: (_, r) => {
+                const ids = projectsByActivity[r.id] || [];
+                return ids.length ? (
+                    ids.map((pid) => (
+                        <Tag key={pid} color="purple" className="rounded-full m-0 mr-1 mb-1 text-[10px]">
+                            {projectNameById[pid] || pid}
+                        </Tag>
+                    ))
+                ) : (
+                    <span className="text-[12px] text-gray-400">—</span>
+                );
+            },
+        },
+        {
             title: 'Ações',
             key: 'actions',
             width: 90,
@@ -391,7 +417,7 @@ function InventoryPage() {
                     loading={loading}
                     pagination={false}
                     size="middle"
-                    scroll={{ x: 760 }}
+                    scroll={{ x: 1000 }}
                 />
             </Card>
 

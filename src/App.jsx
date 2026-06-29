@@ -29,6 +29,7 @@ import {
   DriverDetailPage,
   BauProjectionPage,
   ProjectsPage,
+  ProjectDetailPage,
   ScenariosPage,
   InitiativesManagementPage,
   TechnologiesBankPage,
@@ -248,6 +249,7 @@ export default function App() {
               <Route key={n.key} path={n.key} element={n.element} />
             ))}
             <Route path="/drivers/:id" element={<DriverDetailPage />} />
+            <Route path="/projects/:id" element={<ProjectDetailPage />} />
             <Route path="*" element={<Navigate to="/inventory" replace />} />
           </Routes>
         </Content>

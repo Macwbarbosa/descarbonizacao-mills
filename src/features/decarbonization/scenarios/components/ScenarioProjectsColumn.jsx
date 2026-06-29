@@ -4,6 +4,7 @@ import { Switch, Button, Tag, Select, Tooltip, Empty } from 'antd';
 import { SettingOutlined, DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import { abatementInYear } from '../../projects/utils/projectAbatement';
+import { metaNamesOf, projectMetaIds } from '../../shared/metaScopes';
 import ProjectOverrideModal from './ProjectOverrideModal';
 
 const fmt = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -14,14 +15,31 @@ const scopesOf = (project, activitiesById) => {
 };
 
 /** Coluna esquerda: Projetos do cenário (liga/desliga, resumo, override, adicionar). */
-function ScenarioProjectsColumn({ scenario, projects, initiativesById, ctx, targetYear, onToggle, onUpsertItem, onRemoveItem }) {
+function ScenarioProjectsColumn({ scenario, projects, metas, focusMeta, initiativesById, ctx, targetYear, onToggle, onUpsertItem, onRemoveItem }) {
     const [overrideFor, setOverrideFor] = useState(null);
     const projectsById = Object.fromEntries(projects.map((p) => [p.id, p]));
+    const metasById = Object.fromEntries((metas || []).map((m) => [m.id, m]));
 
     const itemsResolved = (scenario?.items || [])
         .map((it) => ({ item: it, project: projectsById[it.projetoId] }))
         .filter((x) => x.project);
     const availableToAdd = projects.filter((p) => !(scenario?.items || []).some((it) => it.projetoId === p.id));
+
+    // Opções de "adicionar projeto" agrupadas por meta (meta em foco primeiro;
+    // depois as demais; por fim "Sem meta"). Cada projeto aparece uma vez.
+    const addOptions = (() => {
+        const ordered = focusMeta ? [focusMeta, ...(metas || []).filter((m) => m.id !== focusMeta.id)] : metas || [];
+        const used = new Set();
+        const groups = [];
+        ordered.forEach((m) => {
+            const opts = availableToAdd.filter((p) => !used.has(p.id) && projectMetaIds(p).includes(m.id));
+            opts.forEach((p) => used.add(p.id));
+            if (opts.length) groups.push({ label: m.name, options: opts.map((p) => ({ value: p.id, label: p.name })) });
+        });
+        const semMeta = availableToAdd.filter((p) => !used.has(p.id));
+        if (semMeta.length) groups.push({ label: 'Sem meta', options: semMeta.map((p) => ({ value: p.id, label: p.name })) });
+        return groups;
+    })();
 
     const overrideProject = overrideFor ? projectsById[overrideFor] : null;
     const overrideItem = overrideFor ? (scenario.items || []).find((it) => it.projetoId === overrideFor) : null;
@@ -51,9 +69,12 @@ function ScenarioProjectsColumn({ scenario, projects, initiativesById, ctx, targ
                                 <Switch size="small" checked={item.included} onChange={(c) => onToggle(project.id, c)} className="mt-0.5 shrink-0" />
                             </div>
                             <div className="text-[11px] text-gray-500 mt-1">
+                                {metaNamesOf(project, metasById).map((n) => (
+                                    <Tag key={n} color="purple" className="rounded-full m-0 mr-1 text-[10px]">{n}</Tag>
+                                ))}
                                 {scopesOf(project, ctx.activitiesById).map((s) => <Tag key={s} className="rounded-full m-0 mr-1 text-[10px]">{s}</Tag>)}
                                 {(project.memberActivityIds || []).length} ativ. · −{fmt(abat)} tCO2e em {targetYear}
-                                {hasOverride && <Tag color="purple" className="rounded-full ml-1 text-[10px]">override</Tag>}
+                                {hasOverride && <Tag color="gold" className="rounded-full ml-1 text-[10px]">override</Tag>}
                             </div>
                             <div className="flex items-center gap-1 mt-2">
                                 <Tooltip title="Override de abrangência/tempo neste cenário">
@@ -68,11 +89,13 @@ function ScenarioProjectsColumn({ scenario, projects, initiativesById, ctx, targ
 
             <div className="mt-3">
                 <Select
-                    placeholder="+ adicionar projeto"
+                    placeholder="+ adicionar projeto (agrupado por meta)"
                     value={null}
                     style={{ width: '100%' }}
                     disabled={availableToAdd.length === 0}
-                    options={availableToAdd.map((p) => ({ value: p.id, label: p.name }))}
+                    options={addOptions}
+                    showSearch
+                    optionFilterProp="label"
                     onChange={(pid) => pid && onUpsertItem(pid, { included: true })}
                     suffixIcon={<PlusOutlined />}
                 />
@@ -96,6 +119,9 @@ ScenarioProjectsColumn.propTypes = {
     // eslint-disable-next-line react/forbid-prop-types
     scenario: PropTypes.object,
     projects: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
+    metas: PropTypes.arrayOf(PropTypes.object), // eslint-disable-line react/forbid-prop-types
+    // eslint-disable-next-line react/forbid-prop-types
+    focusMeta: PropTypes.object,
     // eslint-disable-next-line react/forbid-prop-types
     initiativesById: PropTypes.object.isRequired,
     // eslint-disable-next-line react/forbid-prop-types
@@ -106,6 +132,6 @@ ScenarioProjectsColumn.propTypes = {
     onRemoveItem: PropTypes.func.isRequired,
 };
 
-ScenarioProjectsColumn.defaultProps = { scenario: null };
+ScenarioProjectsColumn.defaultProps = { scenario: null, metas: [], focusMeta: null };
 
 export default ScenarioProjectsColumn;

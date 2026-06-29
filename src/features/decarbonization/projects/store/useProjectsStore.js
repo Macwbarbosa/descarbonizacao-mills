@@ -14,6 +14,8 @@ const makeProject = (overrides = {}) => ({
     id: uuidv4(),
     name: 'Novo projeto',
     initiativeId: null,
+    // Metas vinculadas (N:N). Define os escopos do inventário disponíveis ao projeto.
+    metaIds: [],
     memberActivityIds: [],
     startYear: overrides.startYear ?? 2026,
     endYear: overrides.endYear ?? 2035,
@@ -56,10 +58,12 @@ const useProjectsStore = create(
                 set({ loading: true, error: null });
                 try {
                     const [bank, projects] = await Promise.all([getInitiativeBank(), getProjects()]);
+                    // Normaliza shape (projetos seed/legados podem não ter metaIds).
+                    const normalized = projects.map((p) => ({ ...p, metaIds: Array.isArray(p.metaIds) ? p.metaIds : [] }));
                     set({
                         bank,
-                        projects,
-                        selectedProjectId: projects[0]?.id ?? null,
+                        projects: normalized,
+                        selectedProjectId: normalized[0]?.id ?? null,
                         loading: false,
                     });
                 } catch (error) {
@@ -72,8 +76,8 @@ const useProjectsStore = create(
 
             selectProject: (id) => set({ selectedProjectId: id }),
 
-            addProject: () => {
-                const project = makeProject();
+            addProject: (overrides = {}) => {
+                const project = makeProject(overrides);
                 set((s) => ({ projects: [...s.projects, project], selectedProjectId: project.id }));
                 return project.id;
             },
