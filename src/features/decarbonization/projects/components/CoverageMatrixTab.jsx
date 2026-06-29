@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Select, Tag, Tooltip, Checkbox, Empty, Button, Input } from 'antd';
-import { WarningOutlined, CaretRightOutlined, CaretDownOutlined, SearchOutlined, PlusOutlined } from '@ant-design/icons';
+import { WarningOutlined, CaretRightOutlined, CaretDownOutlined, SearchOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import { SCOPES, SCOPE_COLORS, activityEmissionByYear } from '../../bau/utils/bauProjection';
 import { activityToProjectsMap, coverageInYear, abatementByActivityInYear } from '../utils/projectAbatement';
@@ -24,7 +24,6 @@ function ActivityYearDetail({ activity, map, projectsById, initiativesById, ctx,
         emissao[year] = emission;
     });
 
-    // Séries por projeto: abrangência (= cobertura do projeto) e redução.
     const perProject = covering.map((p) => {
         const initiative = initiativesById[p.initiativeId] || null;
         const cov = {};
@@ -104,16 +103,23 @@ ActivityYearDetail.propTypes = {
 };
 
 /**
- * Aba "Matriz de cobertura": cada atividade é um nó EXPANSÍVEL. Ao expandir,
- * abre o detalhe ano-a-ano (Emissão · Abrangência · Redução), no padrão da
- * Projeção BAU. Mantém "Coberta por" e "Atribuir a projeto".
+ * Grade ÚNICA de atividades do projeto + cobertura. Árvore expansível
+ * Escopo › Categoria › Atividade. Em cada atividade:
+ *   - checkbox para INCLUIR/EXCLUIR no projeto atual (seleção do grupo);
+ *   - tags dos projetos que cobrem a atividade (o atual em destaque);
+ *   - ao expandir, detalhe ano-a-ano (Emissão · Abrangência · Redução).
+ * Substitui os dois lugares antigos ("Atividades do grupo" + "Matriz de cobertura").
  */
-function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, endYear, onAssign, currentProjectId }) {
+function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, endYear, currentProjectId, memberIds, onSetMembers }) {
     const [onlyOrphans, setOnlyOrphans] = useState(false);
-    const [coverFilter, setCoverFilter] = useState(''); // filtra por projeto que cobre (coluna "Coberta por")
+    const [onlyMembers, setOnlyMembers] = useState(false);
+    const [coverFilter, setCoverFilter] = useState('');
     const [q, setQ] = useState('');
-    const [collapsed, setCollapsed] = useState(() => new Set()); // escopos/categorias recolhidos
-    const [openActs, setOpenActs] = useState(() => new Set()); // atividades expandidas
+    const [collapsed, setCollapsed] = useState(() => new Set());
+    const [openActs, setOpenActs] = useState(() => new Set());
+
+    const selectable = typeof onSetMembers === 'function';
+    const memberSet = useMemo(() => new Set(memberIds || []), [memberIds]);
 
     const query = q.trim().toLowerCase();
     const initiativesById = useMemo(() => Object.fromEntries((initiatives || []).map((i) => [i.id, i])), [initiatives]);
@@ -122,20 +128,28 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
     const projectName = (id) => projectsById[id]?.name || id;
     const orphanCount = activities.filter((a) => !(map[a.id] || []).length).length;
 
-    // Opções do filtro "Coberta por": apenas projetos que cobrem alguma atividade
-    // visível nesta matriz (que pode estar restrita aos escopos da meta do projeto).
+    // Filtro "Coberta por": só projetos que cobrem alguma atividade visível.
     const coverProjectOptions = useMemo(() => {
         const ids = new Set();
         activities.forEach((a) => (map[a.id] || []).forEach((pid) => ids.add(pid)));
         return projects.filter((p) => ids.has(p.id));
     }, [activities, map, projects]);
 
+    const setMembers = (ids, checked) => {
+        if (!selectable) return;
+        const next = new Set(memberSet);
+        ids.forEach((id) => (checked ? next.add(id) : next.delete(id)));
+        onSetMembers(Array.from(next));
+    };
+
     const visible = useMemo(() => {
-        let list = onlyOrphans ? activities.filter((a) => !(map[a.id] || []).length) : activities;
+        let list = activities;
+        if (onlyMembers) list = list.filter((a) => memberSet.has(a.id));
+        if (onlyOrphans) list = list.filter((a) => !(map[a.id] || []).length);
         if (coverFilter) list = list.filter((a) => (map[a.id] || []).includes(coverFilter));
         if (query) list = list.filter((a) => a.name.toLowerCase().includes(query) || a.category.toLowerCase().includes(query));
         return list;
-    }, [activities, map, onlyOrphans, coverFilter, query]);
+    }, [activities, map, onlyMembers, onlyOrphans, coverFilter, query, memberSet]);
     const scopesPresent = SCOPES.filter((s) => visible.some((a) => a.scope === s));
 
     const toggle = (key) =>
@@ -152,7 +166,10 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
             else next.add(id);
             return next;
         });
-    const isOpen = (key) => (query ? true : !collapsed.has(key)); // na busca, grupos expandidos
+    // Em busca / "só do projeto" tudo fica forçadamente aberto (mostra resultados);
+    // nesse modo, os controles de recolher não se aplicam.
+    const forceOpen = Boolean(query) || onlyMembers;
+    const isOpen = (key) => (forceOpen ? true : !collapsed.has(key));
     const allKeys = useMemo(() => {
         const keys = [];
         scopesPresent.forEach((scope) => {
@@ -163,19 +180,45 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
     }, [scopesPresent, visible]);
     const allCollapsed = allKeys.length > 0 && allKeys.every((k) => collapsed.has(k));
     const stop = (e) => e.stopPropagation();
+    const colSpan = selectable ? 3 : 2;
 
     return (
         <Card>
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                <h3 className="text-base font-semibold text-[#210856]">Matriz de cobertura</h3>
+                <h3 className="text-base font-semibold text-[#210856]">Atividades do projeto e cobertura</h3>
                 <div className="flex items-center gap-3 flex-wrap">
                     <span className="text-[11px] text-gray-400">
                         {activities.length} atividades{orphanCount ? ` · ${orphanCount} órfã(s)` : ''}
+                        {selectable ? ` · ${memberSet.size} no projeto` : ''}
                     </span>
-                    <Button type="link" size="small" className="px-0 text-[12px]" onClick={() => setCollapsed(allCollapsed ? new Set() : new Set(allKeys))}>
-                        {allCollapsed ? 'Expandir tudo' : 'Recolher tudo'}
-                    </Button>
-                    <Checkbox checked={onlyOrphans} onChange={(e) => setOnlyOrphans(e.target.checked)}>
+                    {!forceOpen && (
+                        <Button type="link" size="small" className="px-0 text-[12px]" onClick={() => setCollapsed(allCollapsed ? new Set() : new Set(allKeys))}>
+                            {allCollapsed ? 'Expandir tudo' : 'Recolher tudo'}
+                        </Button>
+                    )}
+                    {selectable && (
+                        <Checkbox
+                            checked={onlyMembers}
+                            onChange={(e) => {
+                                const c = e.target.checked;
+                                setOnlyMembers(c);
+                                if (c) setOnlyOrphans(false);
+                            }}
+                        >
+                            só do projeto
+                        </Checkbox>
+                    )}
+                    <Checkbox
+                        checked={onlyOrphans}
+                        onChange={(e) => {
+                            const c = e.target.checked;
+                            setOnlyOrphans(c);
+                            if (c) {
+                                setCoverFilter('');
+                                setOnlyMembers(false);
+                            }
+                        }}
+                    >
                         só órfãs
                     </Checkbox>
                 </div>
@@ -193,7 +236,11 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                 />
                 <Select
                     value={coverFilter}
-                    onChange={setCoverFilter}
+                    onChange={(v) => {
+                        setCoverFilter(v);
+                        if (v) setOnlyOrphans(false);
+                    }}
+                    disabled={onlyOrphans}
                     size="small"
                     style={{ minWidth: 200 }}
                     showSearch
@@ -201,19 +248,22 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                     options={[{ value: '', label: 'Coberta por: todos' }, ...coverProjectOptions.map((p) => ({ value: p.id, label: `Coberta por: ${p.name}` }))]}
                 />
                 {(query || coverFilter) && <span className="text-[11px] text-gray-400">{visible.length} resultado(s)</span>}
-                <span className="text-[11px] text-gray-400">Clique numa atividade para ver Emissão · Abrangência · Redução ano a ano.</span>
+                <span className="text-[11px] text-gray-400">
+                    {selectable ? 'Marque a atividade para incluí-la no projeto. ' : ''}
+                    Clique na atividade para ver Emissão · Abrangência · Redução ano a ano.
+                </span>
             </div>
 
             {visible.length === 0 ? (
                 <Empty description={query || coverFilter ? 'Nenhuma atividade encontrada.' : 'Nenhuma atividade.'} image={Empty.PRESENTED_IMAGE_SIMPLE} />
             ) : (
-                <div className="overflow-auto" style={{ maxHeight: 560 }}>
+                <div className="overflow-auto" style={{ maxHeight: 620 }}>
                     <table className="w-full text-sm border-collapse">
                         <thead>
                             <tr className="text-[11px] uppercase tracking-wide text-gray-500">
+                                {selectable && <th className="px-3 py-2 text-center bg-[#fafbfc] sticky top-0 z-10" style={{ width: 70 }}>No projeto</th>}
                                 <th className="px-3 py-2 text-left bg-[#fafbfc] sticky top-0 z-10">Escopo › Categoria › Atividade</th>
-                                <th className="px-3 py-2 text-left bg-[#fafbfc] sticky top-0 z-10">Coberta por</th>
-                                <th className="px-3 py-2 text-left bg-[#fafbfc] sticky top-0 z-10">Atribuir a projeto</th>
+                                <th className="px-3 py-2 text-left bg-[#fafbfc] sticky top-0 z-10">Projetos (cobertura)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -223,8 +273,8 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                                 const scopeOpen = isOpen(scope);
                                 return (
                                     <React.Fragment key={scope}>
-                                        <tr className="bg-[#eef1f5] text-xs font-bold uppercase tracking-wide cursor-pointer" onClick={() => toggle(scope)}>
-                                            <td className="px-3 py-1.5" colSpan={3}>
+                                        <tr className={`bg-[#eef1f5] text-xs font-bold uppercase tracking-wide ${forceOpen ? '' : 'cursor-pointer'}`} onClick={forceOpen ? undefined : () => toggle(scope)}>
+                                            <td className="px-3 py-1.5" colSpan={colSpan}>
                                                 {scopeOpen ? <CaretDownOutlined className="text-gray-400 mr-1" /> : <CaretRightOutlined className="text-gray-400 mr-1" />}
                                                 <span className="inline-block w-2.5 h-2.5 rounded-sm mr-2 align-middle" style={{ background: SCOPE_COLORS[scope] }} />
                                                 {scope}
@@ -234,26 +284,49 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                                             cats.map((cat) => {
                                                 const catKey = `${scope}||${cat}`;
                                                 const catOpen = isOpen(catKey);
+                                                const catActs = scopeActs.filter((a) => a.category === cat);
+                                                const catIds = catActs.map((a) => a.id);
+                                                const selCount = catIds.filter((id) => memberSet.has(id)).length;
+                                                const catAll = selCount === catIds.length && catIds.length > 0;
+                                                const catSome = selCount > 0 && !catAll;
                                                 return (
                                                     <React.Fragment key={catKey}>
-                                                        <tr className="bg-[#f6f8fa] text-xs font-semibold cursor-pointer" onClick={() => toggle(catKey)}>
-                                                            <td className="px-3 py-1.5" style={{ paddingLeft: 28 }} colSpan={3}>
+                                                        <tr className="bg-[#f6f8fa] text-xs font-semibold">
+                                                            {selectable && (
+                                                                <td className="px-3 py-1.5 text-center" onClick={stop}>
+                                                                    <Checkbox
+                                                                        checked={catAll}
+                                                                        indeterminate={catSome}
+                                                                        onChange={(e) => setMembers(catIds, e.target.checked)}
+                                                                    />
+                                                                </td>
+                                                            )}
+                                                            <td className={`px-3 py-1.5 ${forceOpen ? '' : 'cursor-pointer'}`} style={{ paddingLeft: 28 }} colSpan={2} onClick={forceOpen ? undefined : () => toggle(catKey)}>
                                                                 {catOpen ? <CaretDownOutlined className="text-gray-400 mr-1" /> : <CaretRightOutlined className="text-gray-400 mr-1" />}
                                                                 {cat}
+                                                                <span className="text-[11px] text-gray-400 ml-2 font-normal">{catActs.length} ativ.</span>
                                                             </td>
                                                         </tr>
                                                         {catOpen &&
-                                                            scopeActs.filter((a) => a.category === cat).map((a) => {
+                                                            catActs.map((a) => {
                                                                 const covering = map[a.id] || [];
                                                                 const orphan = covering.length === 0;
-                                                                const assignable = projects.filter((p) => !covering.includes(p.id));
                                                                 const actOpen = openActs.has(a.id);
+                                                                const isMember = memberSet.has(a.id);
                                                                 return (
                                                                     <React.Fragment key={a.id}>
-                                                                        <tr className="border-b border-gray-100 hover:bg-[#f7f9fb] cursor-pointer" onClick={() => toggleAct(a.id)}>
-                                                                            <td className="px-3 py-2 text-left" style={{ paddingLeft: 44 }}>
+                                                                        <tr className={`border-b border-gray-100 hover:bg-[#f7f9fb] ${isMember ? 'bg-[#f6f2fd]' : ''}`}>
+                                                                            {selectable && (
+                                                                                <td className="px-3 py-2 text-center" onClick={stop}>
+                                                                                    <Checkbox checked={isMember} onChange={(e) => setMembers([a.id], e.target.checked)} />
+                                                                                </td>
+                                                                            )}
+                                                                            <td className="px-3 py-2 text-left cursor-pointer" style={{ paddingLeft: 44 }} onClick={() => toggleAct(a.id)}>
                                                                                 {actOpen ? <CaretDownOutlined className="text-gray-400 mr-1" /> : <CaretRightOutlined className="text-gray-400 mr-1" />}
                                                                                 {a.name}
+                                                                                {typeof a.baseEmission === 'number' && (
+                                                                                    <span className="text-[11px] text-gray-400 ml-2">{fmt(a.baseEmission)} tCO2e</span>
+                                                                                )}
                                                                                 {orphan && (
                                                                                     <Tooltip title="Órfã — não recebe abatimento em nenhum cenário">
                                                                                         <WarningOutlined className="text-[#b9462f] ml-2" />
@@ -262,7 +335,7 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                                                                             </td>
                                                                             <td className="px-3 py-2 text-left" onClick={stop}>
                                                                                 {orphan ? (
-                                                                                    <span className="text-[11px] text-[#b9462f] italic">órfã</span>
+                                                                                    <span className="text-[11px] text-gray-400 italic">nenhum</span>
                                                                                 ) : (
                                                                                     covering.map((pid) => (
                                                                                         <Tag
@@ -275,34 +348,10 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                                                                                     ))
                                                                                 )}
                                                                             </td>
-                                                                            <td className="px-3 py-2 text-left" onClick={stop}>
-                                                                                <div className="flex items-center gap-1">
-                                                                                    {currentProjectId && !covering.includes(currentProjectId) && (
-                                                                                        <Button
-                                                                                            size="small"
-                                                                                            type="primary"
-                                                                                            icon={<PlusOutlined />}
-                                                                                            className="bg-[#210856] border-[#210856]"
-                                                                                            onClick={() => onAssign(currentProjectId, a.id)}
-                                                                                        >
-                                                                                            este projeto
-                                                                                        </Button>
-                                                                                    )}
-                                                                                    <Select
-                                                                                        size="small"
-                                                                                        placeholder="atribuir…"
-                                                                                        value={null}
-                                                                                        style={{ minWidth: 150 }}
-                                                                                        disabled={assignable.length === 0}
-                                                                                        options={assignable.map((p) => ({ value: p.id, label: p.name }))}
-                                                                                        onChange={(pid) => pid && onAssign(pid, a.id)}
-                                                                                    />
-                                                                                </div>
-                                                                            </td>
                                                                         </tr>
                                                                         {actOpen && (
                                                                             <tr>
-                                                                                <td colSpan={3} className="p-0">
+                                                                                <td colSpan={colSpan} className="p-0">
                                                                                     <ActivityYearDetail
                                                                                         activity={a}
                                                                                         map={map}
@@ -340,10 +389,11 @@ CoverageMatrixTab.propTypes = {
     ctx: PropTypes.object.isRequired,
     baseYear: PropTypes.number.isRequired,
     endYear: PropTypes.number.isRequired,
-    onAssign: PropTypes.func.isRequired,
     currentProjectId: PropTypes.string,
+    memberIds: PropTypes.arrayOf(PropTypes.string),
+    onSetMembers: PropTypes.func,
 };
 
-CoverageMatrixTab.defaultProps = { initiatives: [], currentProjectId: null };
+CoverageMatrixTab.defaultProps = { initiatives: [], currentProjectId: null, memberIds: [], onSetMembers: null };
 
 export default CoverageMatrixTab;

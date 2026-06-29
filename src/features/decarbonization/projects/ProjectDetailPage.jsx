@@ -29,7 +29,6 @@ function ProjectDetailPage() {
     const loadProjects = useProjectsStore((s) => s.loadProjects);
     const patchProject = useProjectsStore((s) => s.patchProject);
     const removeProject = useProjectsStore((s) => s.removeProject);
-    const assignActivityToProject = useProjectsStore((s) => s.assignActivityToProject);
 
     const activities = useBauStore((s) => s.activities);
     const targetYear = useBauStore((s) => s.targetYear);
@@ -140,7 +139,6 @@ function ProjectDetailPage() {
                                 project={project}
                                 metas={metas}
                                 initiatives={initiatives}
-                                activities={allowedActivities}
                                 ctx={ctx}
                                 targetYear={targetYear}
                                 onPatch={(patch) => patchProject(project.id, patch)}
@@ -155,8 +153,9 @@ function ProjectDetailPage() {
                             ctx={ctx}
                             baseYear={baseYear}
                             endYear={netZeroYear}
-                            onAssign={assignActivityToProject}
                             currentProjectId={project.id}
+                            memberIds={project.memberActivityIds || []}
+                            onSetMembers={(ids) => patchProject(project.id, { memberActivityIds: ids })}
                         />
                     </>
                 ) : (

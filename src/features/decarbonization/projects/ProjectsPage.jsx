@@ -15,8 +15,19 @@ import { abatementInYear, coverageInYear, projectFinanceSummary } from './utils/
 import { metaNamesOf, projectMetaIds } from '../shared/metaScopes';
 
 const NONE = '__none__';
-const fmt = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 const money = (v, c = 'BRL') => `${c} ${Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 })}`;
+
+/**
+ * Abatimento com pelo menos 2 casas decimais. Para valores muito pequenos
+ * (|v| < 0,01) usa notação científica — assim 0,00031 não vira "0".
+ */
+const fmtAbat = (v) => {
+    const n = Number(v) || 0;
+    if (n === 0) return '0,00';
+    const abs = Math.abs(n);
+    if (abs < 0.01) return n.toExponential(2).replace('.', ','); // ex.: 3,10e-4
+    return n.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
 
 /**
  * Etapa 5 — Projetos de Descarbonização, em modo LISTA (tabela), separados por
@@ -178,7 +189,7 @@ function ProjectsPage() {
             align: 'right',
             render: (_, p) => {
                 const abat = abatementInYear(p, targetYear, initiativesById[p.initiativeId] || null, ctx);
-                return <span className="tabular-nums">−{fmt(abat)}</span>;
+                return <span className="tabular-nums">{abat > 0 ? '−' : ''}{fmtAbat(abat)}</span>;
             },
             sorter: (a, b) =>
                 abatementInYear(a, targetYear, initiativesById[a.initiativeId] || null, ctx) -

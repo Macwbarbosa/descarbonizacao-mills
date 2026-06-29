@@ -9,7 +9,6 @@ import {
     coverageInYear,
     projectFinanceSummary,
 } from '../utils/projectAbatement';
-import ActivityGroupTree from './ActivityGroupTree';
 import CoverageCurveChart from './CoverageCurveChart';
 import AbatementPreviewChart from './AbatementPreviewChart';
 import InitiativeMemorialModal from './InitiativeMemorialModal';
@@ -26,7 +25,7 @@ const yearOptions = (from, to) => {
 };
 
 /** Editor de um Projeto: nome, metas, aplicabilidade temporal, iniciativa, grupo de atividades, abrangência e preview do abatimento. */
-function ProjectEditor({ project, metas, initiatives, activities, ctx, targetYear, onPatch, onRemove }) {
+function ProjectEditor({ project, metas, initiatives, ctx, targetYear, onPatch, onRemove }) {
     const [memorialOpen, setMemorialOpen] = useState(false);
     const initiative = initiatives.find((i) => i.id === project.initiativeId) || null;
     const isExclusive = initiative?.source === 'empresa';
@@ -187,17 +186,13 @@ function ProjectEditor({ project, metas, initiatives, activities, ctx, targetYea
 
             {issues.length > 0 && <Alert className="mt-3" type="warning" showIcon message={issues.join(' · ')} />}
 
-            {/* Atividades do grupo */}
+            {/* Atividades do grupo — a SELEÇÃO é feita na grade unificada abaixo. */}
             <Divider className="my-4" orientation="left" orientationMargin={0}>
                 <span className="text-[12px] text-gray-500">
-                    Atividades do grupo · base {fmt(groupBase)} tCO2e ({(project.memberActivityIds || []).length} ativ.)
+                    Atividades do grupo · base {fmt(groupBase)} tCO2e ({(project.memberActivityIds || []).length} ativ.) —
+                    selecione na grade <b>Atividades do projeto e cobertura</b> abaixo
                 </span>
             </Divider>
-            <ActivityGroupTree
-                activities={activities}
-                selectedIds={project.memberActivityIds || []}
-                onChange={(ids) => onPatch({ memberActivityIds: ids })}
-            />
 
             {/* Abrangência no tempo */}
             <Divider className="my-4" orientation="left" orientationMargin={0}>
@@ -309,7 +304,6 @@ ProjectEditor.propTypes = {
     project: PropTypes.object.isRequired,
     metas: PropTypes.arrayOf(PropTypes.object), // eslint-disable-line react/forbid-prop-types
     initiatives: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
-    activities: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
     // eslint-disable-next-line react/forbid-prop-types
     ctx: PropTypes.object.isRequired,
     targetYear: PropTypes.number.isRequired,
