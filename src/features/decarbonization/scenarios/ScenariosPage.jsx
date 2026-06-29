@@ -24,7 +24,6 @@ import {
     metaScopeLabels,
     SCOPES,
 } from './utils/scenarioCalc';
-import DecarbonizationDataBar from '../shared/DecarbonizationDataBar';
 import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import { metaCoveredActivities } from '../shared/metaScopes';
 import ScenarioKpis from './components/ScenarioKpis';
@@ -375,7 +374,6 @@ function ScenariosPage() {
 
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
-            <DecarbonizationDataBar />
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3 gap-3">
                 <div>
                     <div className="text-xs text-gray-500">

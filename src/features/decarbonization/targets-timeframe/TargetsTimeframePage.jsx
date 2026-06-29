@@ -8,7 +8,6 @@ import { aggregateByScope, activitiesForYear } from '../inventory/utils/inventor
 import { indicePorAno } from '../drivers/utils/driverIndex';
 import { computeMetaTarget } from './services/sbtiTargetService';
 import { validateMetas } from './utils/metaValidation';
-import DecarbonizationDataBar from '../shared/DecarbonizationDataBar';
 import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import PlanTimeframePanel from './components/PlanTimeframePanel';
 import MetasPanel from './components/MetasPanel';
@@ -103,7 +102,6 @@ function TargetsTimeframePage() {
 
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
-            <DecarbonizationDataBar />
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
                 <div>
                     <div className="text-xs text-gray-500">

@@ -8,7 +8,6 @@ import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore'
 import Sparkline from './components/Sparkline';
 import { indicePorAno } from './utils/driverIndex';
 import { METHOD_LABELS } from './constants';
-import DecarbonizationDataBar from '../shared/DecarbonizationDataBar';
 import { saveCompanyToProject } from '../shared/decarbonizationExport';
 
 /**
@@ -156,7 +155,6 @@ function DriversPage() {
 
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
-            <DecarbonizationDataBar />
             {/* Header */}
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
                 <div>

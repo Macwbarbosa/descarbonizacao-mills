@@ -11,7 +11,6 @@ import { parseNumber } from '../inventory/utils/inventoryAggregate';
 import BauKpis from './components/BauKpis';
 import BauAreaChart from './components/BauAreaChart';
 import BauMatrix from './components/BauMatrix';
-import DecarbonizationDataBar from '../shared/DecarbonizationDataBar';
 import { saveCompanyToProject } from '../shared/decarbonizationExport';
 
 /**
@@ -198,7 +197,6 @@ function BauProjectionPage() {
 
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
-            <DecarbonizationDataBar />
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-5 gap-3">
                 <div>
                     <div className="text-xs text-gray-500">

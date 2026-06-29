@@ -8,7 +8,6 @@ import useBauStore from '../bau/store/useBauStore';
 import useDriversStore from '../drivers/store/useDriversStore';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
 import useTechnologyBankStore from '../../../store/technologyBankStore';
-import DecarbonizationDataBar from '../shared/DecarbonizationDataBar';
 import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import { mergedInitiatives } from './utils/initiativeCatalog';
 import { abatementInYear, coverageInYear, projectFinanceSummary } from './utils/projectAbatement';
@@ -216,7 +215,6 @@ function ProjectsPage() {
 
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
-            <DecarbonizationDataBar />
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4 gap-3">
                 <div>
                     <div className="text-xs text-gray-500">

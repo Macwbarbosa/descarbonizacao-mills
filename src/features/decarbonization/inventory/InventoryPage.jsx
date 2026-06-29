@@ -12,7 +12,6 @@ import useProjectsStore from '../projects/store/useProjectsStore';
 import { activityToProjectsMap } from '../projects/utils/projectAbatement';
 import { useEmissionsStore } from '../../emissions/emissions-table/store/emissionsStore';
 import { aggregateByScope, rowsToActivities, emissionsToInventory, activitiesForYear, yearsPresent, SCOPES } from './utils/inventoryAggregate';
-import DecarbonizationDataBar from '../shared/DecarbonizationDataBar';
 import { saveCompanyToProject } from '../shared/decarbonizationExport';
 import ActivityFormModal from './components/ActivityFormModal';
 
@@ -314,7 +313,6 @@ function InventoryPage() {
 
     return (
         <div className="px-2 min-h-[calc(100vh-106px)]">
-            <DecarbonizationDataBar />
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-3 gap-3">
                 <div>
                     <div className="text-xs text-gray-500">
