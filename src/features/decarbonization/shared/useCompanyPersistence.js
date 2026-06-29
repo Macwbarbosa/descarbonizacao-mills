@@ -8,6 +8,7 @@ import {
     loadCompanyFromProject,
     reloadActive,
 } from './decarbonizationExport';
+import { logSave } from './decarbonizationAudit';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
 import useInventoryStore from '../inventory/store/useInventoryStore';
 import useDriversStore from '../drivers/store/useDriversStore';
@@ -88,6 +89,9 @@ export default function useCompanyPersistence() {
             setStatus('saving');
             try {
                 await saveCompanyToProject(cnpj);
+                // Log de auditoria: quem/qual empresa/quando (fire-and-forget).
+                const auth = useAuthStore.getState();
+                logSave({ cnpj, empresa: auth.user?.selectedCompany?.company, email: auth.authEmail });
                 if (myReq === reqIdRef.current) {
                     lastSavedRef.current[cnpj] = current; // só o save mais recente avança o baseline
                     pendingRef.current = false;

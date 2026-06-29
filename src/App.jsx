@@ -18,11 +18,14 @@ import {
   LoadingOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
+  HistoryOutlined,
 } from '@ant-design/icons';
 
 import { useAuthStore } from '@/features/auth/shared/store/authStore';
 import LoginPage from '@/features/auth/LoginPage';
+import AuditLogModal from '@/features/auth/AuditLogModal';
 import useCompanyPersistence from '@/features/decarbonization/shared/useCompanyPersistence';
+import { ADMIN_EMAIL } from '@/features/decarbonization/shared/decarbonizationAudit';
 import { formatCnpj } from '@/features/decarbonization/shared/decarbonizationStorage';
 import { listCompanyFiles, readCompanyFile } from '@/features/decarbonization/shared/decarbonizationFile';
 
@@ -185,13 +188,17 @@ function AutoSaveIndicator({ status, enabled }) {
 }
 
 /** Menu do usuário logado: mostra o e-mail e permite sair. */
-function UserMenu() {
+function UserMenu({ onOpenAudit }) {
   const authEmail = useAuthStore((s) => s.authEmail);
   const logout = useAuthStore((s) => s.logout);
+  const isAdmin = authEmail === ADMIN_EMAIL;
 
   const items = [
     { key: 'email', label: <span className="text-xs text-gray-500">{authEmail}</span>, disabled: true },
     { type: 'divider' },
+    ...(isAdmin
+      ? [{ key: 'audit', icon: <HistoryOutlined />, label: 'Histórico de alterações', onClick: onOpenAudit }]
+      : []),
     { key: 'logout', icon: <LogoutOutlined />, label: 'Sair', onClick: logout },
   ];
 
@@ -209,6 +216,7 @@ export default function App() {
   const location = useLocation();
   const selectedKey = NAV.find((n) => location.pathname.startsWith(n.key))?.key || '/inventory';
   const [collapsed, setCollapsed] = useState(false);
+  const [auditOpen, setAuditOpen] = useState(false);
   const authEmail = useAuthStore((s) => s.authEmail);
   // Carga por empresa + auto-save no banco (Supabase), global a todas as telas.
   const persistence = useCompanyPersistence();
@@ -275,7 +283,7 @@ export default function App() {
           <div className="flex items-center gap-4">
             <AutoSaveIndicator status={persistence.status} enabled={persistence.enabled} />
             <CompanyPicker />
-            <UserMenu />
+            <UserMenu onOpenAudit={() => setAuditOpen(true)} />
           </div>
         </Header>
         <div className="climoo-accent-bar" />
@@ -292,6 +300,10 @@ export default function App() {
           </Routes>
         </Content>
       </Layout>
+
+      {authEmail === ADMIN_EMAIL && (
+        <AuditLogModal open={auditOpen} onClose={() => setAuditOpen(false)} />
+      )}
     </Layout>
   );
 }
