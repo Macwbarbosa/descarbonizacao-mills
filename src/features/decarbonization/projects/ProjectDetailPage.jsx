@@ -133,31 +133,28 @@ function ProjectDetailPage() {
 
             <Spin spinning={loading}>
                 {project ? (
-                    <>
-                        <Card className="mb-4">
-                            <ProjectEditor
-                                project={project}
-                                metas={metas}
+                    <ProjectEditor
+                        project={project}
+                        metas={metas}
+                        initiatives={initiatives}
+                        ctx={ctx}
+                        targetYear={targetYear}
+                        onPatch={(patch) => patchProject(project.id, patch)}
+                        onRemove={handleRemove}
+                        activityGridSlot={
+                            <CoverageMatrixTab
+                                activities={allowedActivities}
+                                projects={projects}
                                 initiatives={initiatives}
                                 ctx={ctx}
-                                targetYear={targetYear}
-                                onPatch={(patch) => patchProject(project.id, patch)}
-                                onRemove={handleRemove}
+                                baseYear={baseYear}
+                                endYear={netZeroYear}
+                                currentProjectId={project.id}
+                                memberIds={project.memberActivityIds || []}
+                                onSetMembers={(ids) => patchProject(project.id, { memberActivityIds: ids })}
                             />
-                        </Card>
-
-                        <CoverageMatrixTab
-                            activities={allowedActivities}
-                            projects={projects}
-                            initiatives={initiatives}
-                            ctx={ctx}
-                            baseYear={baseYear}
-                            endYear={netZeroYear}
-                            currentProjectId={project.id}
-                            memberIds={project.memberActivityIds || []}
-                            onSetMembers={(ids) => patchProject(project.id, { memberActivityIds: ids })}
-                        />
-                    </>
+                        }
+                    />
                 ) : (
                     !loading && (
                         <Card>

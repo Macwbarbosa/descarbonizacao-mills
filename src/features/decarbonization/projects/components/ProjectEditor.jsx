@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Input, Select, InputNumber, Button, Row, Col, Alert, Divider, Tag, Tooltip } from 'antd';
+import { Input, Select, InputNumber, Button, Row, Col, Alert, Tag, Tooltip } from 'antd';
 import { DeleteOutlined, PlusOutlined, FileTextOutlined } from '@ant-design/icons';
 import { StatCard } from '@/shared/components/ui/Card';
 import {
@@ -12,6 +12,7 @@ import {
 import CoverageCurveChart from './CoverageCurveChart';
 import AbatementPreviewChart from './AbatementPreviewChart';
 import InitiativeMemorialModal from './InitiativeMemorialModal';
+import StepSection from './StepSection';
 import { metaScopeLabels } from '../../shared/metaScopes';
 
 const labelCls = 'text-[10px] uppercase tracking-wide text-gray-500 block mb-1';
@@ -24,8 +25,13 @@ const yearOptions = (from, to) => {
     return out;
 };
 
-/** Editor de um Projeto: nome, metas, aplicabilidade temporal, iniciativa, grupo de atividades, abrangência e preview do abatimento. */
-function ProjectEditor({ project, metas, initiatives, ctx, targetYear, onPatch, onRemove }) {
+/**
+ * Editor de um Projeto, em ETAPAS distintas (cards com cabeçalho destacado):
+ * 1) Identificação e escopo, 2) Atividades do projeto (grade injetada via
+ * `activityGridSlot`), 3) Abrangência no tempo, 4) Quantificação financeira,
+ * 5) Abatimento resultante.
+ */
+function ProjectEditor({ project, metas, initiatives, ctx, targetYear, onPatch, onRemove, activityGridSlot }) {
     const [memorialOpen, setMemorialOpen] = useState(false);
     const initiative = initiatives.find((i) => i.id === project.initiativeId) || null;
     const isExclusive = initiative?.source === 'empresa';
@@ -95,204 +101,207 @@ function ProjectEditor({ project, metas, initiatives, ctx, targetYear, onPatch, 
         setPoints([...points, { year: Math.min(project.endYear, lastYear + 1), pct: 50 }]);
     };
 
+    const memberCount = (project.memberActivityIds || []).length;
+
     return (
         <div>
-            <Row gutter={[12, 12]} align="bottom">
-                <Col flex="1 1 auto">
-                    <span className={labelCls}>Nome do projeto</span>
-                    <Input value={project.name} onChange={(e) => onPatch({ name: e.target.value })} />
-                </Col>
-                <Col flex="0 0 auto">
+            {/* Etapa 1 — Identificação e escopo */}
+            <StepSection
+                step={1}
+                title="Identificação e escopo"
+                hint="Nome, metas vinculadas, período e iniciativa do projeto"
+                extra={
                     <Button danger icon={<DeleteOutlined />} onClick={() => onRemove(project.id)}>
                         Remover
                     </Button>
-                </Col>
-            </Row>
+                }
+            >
+                <Row gutter={[12, 12]}>
+                    <Col xs={24}>
+                        <span className={labelCls}>Nome do projeto</span>
+                        <Input value={project.name} onChange={(e) => onPatch({ name: e.target.value })} />
+                    </Col>
+                </Row>
 
-            {/* Metas vinculadas (N:N) — definem os escopos do inventário disponíveis */}
-            <Row gutter={[12, 12]} className="mt-3">
-                <Col xs={24}>
-                    <span className={labelCls}>Metas vinculadas</span>
-                    <Select
-                        mode="multiple"
-                        allowClear
-                        value={project.metaIds || []}
-                        options={metaOptions}
-                        onChange={(v) => onPatch({ metaIds: v })}
-                        placeholder="Selecione a(s) meta(s) — define os escopos do inventário disponíveis"
-                        style={{ width: '100%' }}
-                        optionFilterProp="label"
-                    />
-                    <div className="text-[11px] text-gray-400 mt-1">
-                        {allowedScopes.length > 0
-                            ? `Inventário restrito a: ${allowedScopes.join(', ')}.`
-                            : 'Sem meta vinculada — todo o inventário fica disponível.'}
-                    </div>
-                </Col>
-            </Row>
-
-            {/* Aplicabilidade temporal + iniciativa */}
-            <Row gutter={[12, 12]} className="mt-3">
-                <Col xs={12} md={4}>
-                    <span className={labelCls}>Início</span>
-                    <Select
-                        value={project.startYear}
-                        options={yearOptions(ctx.baseYear, ctx.endYear)}
-                        onChange={(v) => onPatch({ startYear: v })}
-                        style={{ width: '100%' }}
-                    />
-                </Col>
-                <Col xs={12} md={4}>
-                    <span className={labelCls}>Fim</span>
-                    <Select
-                        value={project.endYear}
-                        options={yearOptions(ctx.baseYear, ctx.endYear)}
-                        onChange={(v) => onPatch({ endYear: v })}
-                        style={{ width: '100%' }}
-                    />
-                </Col>
-                <Col xs={24} md={16}>
-                    <span className={labelCls}>Iniciativa (do Banco de tecnologias)</span>
-                    <div className="flex items-center gap-2">
+                {/* Metas vinculadas (N:N) — definem os escopos do inventário disponíveis */}
+                <Row gutter={[12, 12]} className="mt-3">
+                    <Col xs={24}>
+                        <span className={labelCls}>Metas vinculadas</span>
                         <Select
-                            value={project.initiativeId || undefined}
-                            options={initiativeOptions}
-                            onChange={(v) => onPatch({ initiativeId: v })}
-                            placeholder="Selecione a iniciativa"
-                            style={{ flex: 1 }}
-                            showSearch
+                            mode="multiple"
+                            allowClear
+                            value={project.metaIds || []}
+                            options={metaOptions}
+                            onChange={(v) => onPatch({ metaIds: v })}
+                            placeholder="Selecione a(s) meta(s) — define os escopos do inventário disponíveis"
+                            style={{ width: '100%' }}
                             optionFilterProp="label"
                         />
-                        <Tooltip title="Ver memorial da iniciativa">
-                            <Button icon={<FileTextOutlined />} disabled={!initiative} onClick={() => setMemorialOpen(true)}>
-                                Memorial
-                            </Button>
-                        </Tooltip>
-                    </div>
-                    {initiative ? (
-                        <div className="text-[11px] text-gray-500 mt-1">
-                            <Tag color={isExclusive ? 'purple' : 'blue'} className="rounded-full mr-1">
-                                {isExclusive ? 'Exclusiva da empresa' : 'Catálogo global'}
-                            </Tag>
-                            Eficácia <b>{initiative.efficacy}%</b> · a quantificação financeira é configurada no projeto (abaixo).
-                        </div>
-                    ) : (
                         <div className="text-[11px] text-gray-400 mt-1">
-                            Iniciativas são criadas/editadas na página <b>Banco de tecnologias</b> — aqui apenas selecione.
+                            {allowedScopes.length > 0
+                                ? `Inventário restrito a: ${allowedScopes.join(', ')}.`
+                                : 'Sem meta vinculada — todo o inventário fica disponível.'}
                         </div>
-                    )}
-                </Col>
-            </Row>
+                    </Col>
+                </Row>
 
-            {issues.length > 0 && <Alert className="mt-3" type="warning" showIcon message={issues.join(' · ')} />}
+                {/* Aplicabilidade temporal + iniciativa */}
+                <Row gutter={[12, 12]} className="mt-3">
+                    <Col xs={12} md={4}>
+                        <span className={labelCls}>Início</span>
+                        <Select
+                            value={project.startYear}
+                            options={yearOptions(ctx.baseYear, ctx.endYear)}
+                            onChange={(v) => onPatch({ startYear: v })}
+                            style={{ width: '100%' }}
+                        />
+                    </Col>
+                    <Col xs={12} md={4}>
+                        <span className={labelCls}>Fim</span>
+                        <Select
+                            value={project.endYear}
+                            options={yearOptions(ctx.baseYear, ctx.endYear)}
+                            onChange={(v) => onPatch({ endYear: v })}
+                            style={{ width: '100%' }}
+                        />
+                    </Col>
+                    <Col xs={24} md={16}>
+                        <span className={labelCls}>Iniciativa (do Banco de tecnologias)</span>
+                        <div className="flex items-center gap-2">
+                            <Select
+                                value={project.initiativeId || undefined}
+                                options={initiativeOptions}
+                                onChange={(v) => onPatch({ initiativeId: v })}
+                                placeholder="Selecione a iniciativa"
+                                style={{ flex: 1 }}
+                                showSearch
+                                optionFilterProp="label"
+                            />
+                            <Tooltip title="Ver memorial da iniciativa">
+                                <Button icon={<FileTextOutlined />} disabled={!initiative} onClick={() => setMemorialOpen(true)}>
+                                    Memorial
+                                </Button>
+                            </Tooltip>
+                        </div>
+                        {initiative ? (
+                            <div className="text-[11px] text-gray-500 mt-1">
+                                <Tag color={isExclusive ? 'purple' : 'blue'} className="rounded-full mr-1">
+                                    {isExclusive ? 'Exclusiva da empresa' : 'Catálogo global'}
+                                </Tag>
+                                Eficácia <b>{initiative.efficacy}%</b> · a quantificação financeira é configurada no projeto (abaixo).
+                            </div>
+                        ) : (
+                            <div className="text-[11px] text-gray-400 mt-1">
+                                Iniciativas são criadas/editadas na página <b>Banco de tecnologias</b> — aqui apenas selecione.
+                            </div>
+                        )}
+                    </Col>
+                </Row>
 
-            {/* Atividades do grupo — a SELEÇÃO é feita na grade unificada abaixo. */}
-            <Divider className="my-4" orientation="left" orientationMargin={0}>
-                <span className="text-[12px] text-gray-500">
-                    Atividades do grupo · base {fmt(groupBase)} tCO2e ({(project.memberActivityIds || []).length} ativ.) —
-                    selecione na grade <b>Atividades do projeto e cobertura</b> abaixo
-                </span>
-            </Divider>
+                {issues.length > 0 && <Alert className="mt-3" type="warning" showIcon message={issues.join(' · ')} />}
+            </StepSection>
 
-            {/* Abrangência no tempo */}
-            <Divider className="my-4" orientation="left" orientationMargin={0}>
-                <span className="text-[12px] text-gray-500">Abrangência no tempo (% do grupo)</span>
-            </Divider>
-            <Row gutter={16}>
-                <Col xs={24} md={10}>
-                    {points.map((p, idx) => (
-                        // eslint-disable-next-line react/no-array-index-key
-                        <Row gutter={8} align="middle" className="mb-2" key={idx}>
-                            <Col flex="1 1 0">
-                                <Select
-                                    value={p.year}
-                                    options={yearOptions(project.startYear, project.endYear)}
-                                    onChange={(v) => updatePoint(idx, 'year', v)}
-                                    style={{ width: '100%' }}
-                                />
-                            </Col>
-                            <Col flex="1 1 0">
-                                <InputNumber
-                                    value={p.pct}
-                                    min={0}
-                                    max={100}
-                                    formatter={(v) => `${v}%`}
-                                    parser={(v) => v.replace('%', '')}
-                                    onChange={(v) => updatePoint(idx, 'pct', v)}
-                                    style={{ width: '100%' }}
-                                />
-                            </Col>
-                            <Col flex="0 0 auto">
-                                <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removePoint(idx)} aria-label="Remover ponto" />
-                            </Col>
-                        </Row>
-                    ))}
-                    <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addPoint}>
-                        Adicionar ponto
-                    </Button>
-                    <div className="text-[11px] text-gray-400 mt-2">
-                        Interpolação linear; 0% antes do início; constante após o último ponto.
-                    </div>
-                </Col>
-                <Col xs={24} md={14}>
-                    <CoverageCurveChart project={project} baseYear={ctx.baseYear} endYear={ctx.endYear} />
-                </Col>
-            </Row>
+            {/* Etapa 2 — Atividades do projeto (grade unificada: seleção + cobertura) */}
+            <StepSection
+                step={2}
+                title="Atividades do projeto"
+                hint={`Marque as atividades do inventário que compõem o projeto · base ${fmt(groupBase)} tCO2e (${memberCount} ativ.)`}
+            >
+                {activityGridSlot}
+            </StepSection>
 
-            {/* Quantificação financeira (POR PROJETO) — alimenta o custo do MACC */}
-            <Divider className="my-4" orientation="left" orientationMargin={0}>
-                <span className="text-[12px] text-gray-500">
-                    Quantificação financeira do projeto <Tag className="rounded-full ml-1">CAPEX · OPEX · receitas · economias</Tag>
-                </span>
-            </Divider>
-            <Row gutter={[12, 12]}>
-                <Col xs={12} md={8} lg={4}>
-                    <span className={labelCls}>CAPEX</span>
-                    <InputNumber value={finance.capex} min={0} onChange={(v) => setFinance({ capex: Number(v) || 0 })} style={{ width: '100%' }} />
-                </Col>
-                <Col xs={12} md={8} lg={4}>
-                    <span className={labelCls}>OPEX (a.a.)</span>
-                    <InputNumber value={finance.opex} min={0} onChange={(v) => setFinance({ opex: Number(v) || 0 })} style={{ width: '100%' }} />
-                </Col>
-                <Col xs={12} md={8} lg={4}>
-                    <span className={labelCls}>Receitas</span>
-                    <InputNumber value={finance.revenues} min={0} onChange={(v) => setFinance({ revenues: Number(v) || 0 })} style={{ width: '100%' }} />
-                </Col>
-                <Col xs={12} md={8} lg={4}>
-                    <span className={labelCls}>Economias</span>
-                    <InputNumber value={finance.savings} min={0} onChange={(v) => setFinance({ savings: Number(v) || 0 })} style={{ width: '100%' }} />
-                </Col>
-                <Col xs={12} md={8} lg={4}>
-                    <span className={labelCls}>Moeda</span>
-                    <Input value={finance.currency || 'BRL'} onChange={(e) => setFinance({ currency: e.target.value })} />
-                </Col>
-                <Col xs={12} md={8} lg={4}>
-                    <span className={labelCls}>Vida útil (anos)</span>
-                    <InputNumber value={finance.lifetimeYears} min={1} onChange={(v) => setFinance({ lifetimeYears: Number(v) || 1 })} style={{ width: '100%' }} />
-                </Col>
-            </Row>
+            {/* Etapa 3 — Abrangência no tempo */}
+            <StepSection step={3} title="Abrangência no tempo" hint="% do grupo adotada ao longo dos anos">
+                <Row gutter={16}>
+                    <Col xs={24} md={10}>
+                        {points.map((p, idx) => (
+                            // eslint-disable-next-line react/no-array-index-key
+                            <Row gutter={8} align="middle" className="mb-2" key={idx}>
+                                <Col flex="1 1 0">
+                                    <Select
+                                        value={p.year}
+                                        options={yearOptions(project.startYear, project.endYear)}
+                                        onChange={(v) => updatePoint(idx, 'year', v)}
+                                        style={{ width: '100%' }}
+                                    />
+                                </Col>
+                                <Col flex="1 1 0">
+                                    <InputNumber
+                                        value={p.pct}
+                                        min={0}
+                                        max={100}
+                                        formatter={(v) => `${v}%`}
+                                        parser={(v) => v.replace('%', '')}
+                                        onChange={(v) => updatePoint(idx, 'pct', v)}
+                                        style={{ width: '100%' }}
+                                    />
+                                </Col>
+                                <Col flex="0 0 auto">
+                                    <Button type="text" danger icon={<DeleteOutlined />} onClick={() => removePoint(idx)} aria-label="Remover ponto" />
+                                </Col>
+                            </Row>
+                        ))}
+                        <Button type="dashed" size="small" icon={<PlusOutlined />} onClick={addPoint}>
+                            Adicionar ponto
+                        </Button>
+                        <div className="text-[11px] text-gray-400 mt-2">
+                            Interpolação linear; 0% antes do início; constante após o último ponto.
+                        </div>
+                    </Col>
+                    <Col xs={24} md={14}>
+                        <CoverageCurveChart project={project} baseYear={ctx.baseYear} endYear={ctx.endYear} />
+                    </Col>
+                </Row>
+            </StepSection>
 
-            {/* Abatimento resultante */}
-            <Divider className="my-4" orientation="left" orientationMargin={0}>
-                <span className="text-[12px] text-gray-500">
-                    Abatimento resultante <Tag color="blue" className="rounded-full ml-1">grupo × abrangência × eficácia</Tag>
-                </span>
-            </Divider>
-            <Row gutter={[12, 12]} className="mb-3">
-                <Col xs={12} lg={6}>
-                    <StatCard title={`Abrangência ${targetYear}`} value={`${coverageInYear(project, targetYear).toFixed(0)}%`} unit="" />
-                </Col>
-                <Col xs={12} lg={6}>
-                    <StatCard title={`Abatimento ${targetYear}`} value={fmt(abatementTarget)} unit="tCO2e" tooltipInfo={`Grupo ${fmt(groupTarget)} tCO2e no ano-meta.`} />
-                </Col>
-                <Col xs={12} lg={6}>
-                    <StatCard title="Custo líquido (horizonte)" value={money(financeSummary.custoLiquido, financeSummary.currency)} unit="" tooltipInfo="CAPEX + OPEX×vida − receitas − economias (placeholder)." />
-                </Col>
-                <Col xs={12} lg={6}>
-                    <StatCard title="Custo por tCO2e" value={money(Math.round(financeSummary.custoPorTon), financeSummary.currency)} unit="/tCO2e" tooltipInfo="Custo líquido ÷ abatimento acumulado (placeholder MACC)." />
-                </Col>
-            </Row>
-            <AbatementPreviewChart project={project} initiative={initiative} ctx={ctx} />
+            {/* Etapa 4 — Quantificação financeira (POR PROJETO) — alimenta o custo do MACC */}
+            <StepSection step={4} title="Quantificação financeira" hint="CAPEX · OPEX · receitas · economias (por projeto)">
+                <Row gutter={[12, 12]}>
+                    <Col xs={12} md={8} lg={4}>
+                        <span className={labelCls}>CAPEX</span>
+                        <InputNumber value={finance.capex} min={0} onChange={(v) => setFinance({ capex: Number(v) || 0 })} style={{ width: '100%' }} />
+                    </Col>
+                    <Col xs={12} md={8} lg={4}>
+                        <span className={labelCls}>OPEX (a.a.)</span>
+                        <InputNumber value={finance.opex} min={0} onChange={(v) => setFinance({ opex: Number(v) || 0 })} style={{ width: '100%' }} />
+                    </Col>
+                    <Col xs={12} md={8} lg={4}>
+                        <span className={labelCls}>Receitas</span>
+                        <InputNumber value={finance.revenues} min={0} onChange={(v) => setFinance({ revenues: Number(v) || 0 })} style={{ width: '100%' }} />
+                    </Col>
+                    <Col xs={12} md={8} lg={4}>
+                        <span className={labelCls}>Economias</span>
+                        <InputNumber value={finance.savings} min={0} onChange={(v) => setFinance({ savings: Number(v) || 0 })} style={{ width: '100%' }} />
+                    </Col>
+                    <Col xs={12} md={8} lg={4}>
+                        <span className={labelCls}>Moeda</span>
+                        <Input value={finance.currency || 'BRL'} onChange={(e) => setFinance({ currency: e.target.value })} />
+                    </Col>
+                    <Col xs={12} md={8} lg={4}>
+                        <span className={labelCls}>Vida útil (anos)</span>
+                        <InputNumber value={finance.lifetimeYears} min={1} onChange={(v) => setFinance({ lifetimeYears: Number(v) || 1 })} style={{ width: '100%' }} />
+                    </Col>
+                </Row>
+            </StepSection>
+
+            {/* Etapa 5 — Abatimento resultante */}
+            <StepSection step={5} title="Abatimento resultante" hint="grupo × abrangência × eficácia">
+                <Row gutter={[12, 12]} className="mb-3">
+                    <Col xs={12} lg={6}>
+                        <StatCard title={`Abrangência ${targetYear}`} value={`${coverageInYear(project, targetYear).toFixed(0)}%`} unit="" />
+                    </Col>
+                    <Col xs={12} lg={6}>
+                        <StatCard title={`Abatimento ${targetYear}`} value={fmt(abatementTarget)} unit="tCO2e" tooltipInfo={`Grupo ${fmt(groupTarget)} tCO2e no ano-meta.`} />
+                    </Col>
+                    <Col xs={12} lg={6}>
+                        <StatCard title="Custo líquido (horizonte)" value={money(financeSummary.custoLiquido, financeSummary.currency)} unit="" tooltipInfo="CAPEX + OPEX×vida − receitas − economias (placeholder)." />
+                    </Col>
+                    <Col xs={12} lg={6}>
+                        <StatCard title="Custo por tCO2e" value={money(Math.round(financeSummary.custoPorTon), financeSummary.currency)} unit="/tCO2e" tooltipInfo="Custo líquido ÷ abatimento acumulado (placeholder MACC)." />
+                    </Col>
+                </Row>
+                <AbatementPreviewChart project={project} initiative={initiative} ctx={ctx} />
+            </StepSection>
 
             <InitiativeMemorialModal open={memorialOpen} initiative={initiative} onClose={() => setMemorialOpen(false)} />
         </div>
@@ -309,8 +318,9 @@ ProjectEditor.propTypes = {
     targetYear: PropTypes.number.isRequired,
     onPatch: PropTypes.func.isRequired,
     onRemove: PropTypes.func.isRequired,
+    activityGridSlot: PropTypes.node,
 };
 
-ProjectEditor.defaultProps = { metas: [] };
+ProjectEditor.defaultProps = { metas: [], activityGridSlot: null };
 
 export default ProjectEditor;

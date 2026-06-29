@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { Select, Tag, Tooltip, Checkbox, Empty, Button, Input } from 'antd';
 import { WarningOutlined, CaretRightOutlined, CaretDownOutlined, SearchOutlined } from '@ant-design/icons';
-import { Card } from '@/shared/components/ui/Card';
 import { SCOPES, SCOPE_COLORS, activityEmissionByYear } from '../../bau/utils/bauProjection';
 import { activityToProjectsMap, coverageInYear, abatementByActivityInYear } from '../utils/projectAbatement';
 
@@ -183,14 +182,13 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
     const colSpan = selectable ? 3 : 2;
 
     return (
-        <Card>
+        <div>
             <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
-                <h3 className="text-base font-semibold text-[#210856]">Atividades do projeto e cobertura</h3>
+                <span className="text-[12px] text-gray-500">
+                    {activities.length} atividades{orphanCount ? ` · ${orphanCount} órfã(s)` : ''}
+                    {selectable ? ` · ${memberSet.size} no projeto` : ''}
+                </span>
                 <div className="flex items-center gap-3 flex-wrap">
-                    <span className="text-[11px] text-gray-400">
-                        {activities.length} atividades{orphanCount ? ` · ${orphanCount} órfã(s)` : ''}
-                        {selectable ? ` · ${memberSet.size} no projeto` : ''}
-                    </span>
                     {!forceOpen && (
                         <Button type="link" size="small" className="px-0 text-[12px]" onClick={() => setCollapsed(allCollapsed ? new Set() : new Set(allKeys))}>
                             {allCollapsed ? 'Expandir tudo' : 'Recolher tudo'}
@@ -377,7 +375,7 @@ function CoverageMatrixTab({ activities, projects, initiatives, ctx, baseYear, e
                     </table>
                 </div>
             )}
-        </Card>
+        </div>
     );
 }
 
