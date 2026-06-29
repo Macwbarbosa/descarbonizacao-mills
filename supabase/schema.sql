@@ -42,8 +42,13 @@ create table if not exists public.decarbonization_audit (
   empresa     text,
   user_email  text,
   action      text default 'save',
+  changes     jsonb default '[]'::jsonb,   -- lista de alterações (o que mudou)
   created_at  timestamptz not null default now()
 );
+
+-- Se a tabela já existia (sem a coluna), adiciona a coluna de alterações:
+alter table public.decarbonization_audit
+  add column if not exists changes jsonb default '[]'::jsonb;
 
 create index if not exists decarbonization_audit_created_at_idx
   on public.decarbonization_audit (created_at desc);

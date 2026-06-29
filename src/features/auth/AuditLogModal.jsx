@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
-import { Modal, Table, Tag, Button, Select } from 'antd';
+import { Modal, Table, Button, Select } from 'antd';
 import { ReloadOutlined } from '@ant-design/icons';
 import { fetchAudit } from '@/features/decarbonization/shared/decarbonizationAudit';
 import { formatCnpj } from '@/features/decarbonization/shared/decarbonizationStorage';
@@ -61,20 +61,43 @@ function AuditLogModal({ open, onClose }) {
             ),
         },
         {
-            title: 'Ação',
-            dataIndex: 'action',
-            key: 'action',
-            width: 110,
-            render: (v) => <Tag className="rounded-full">{v || 'save'}</Tag>,
+            title: 'Alterações',
+            key: 'changes',
+            render: (_, r) => {
+                const list = Array.isArray(r.changes) ? r.changes : [];
+                if (list.length === 0) return <span className="text-gray-400">salvamento (sem detalhe)</span>;
+                return (
+                    <div className="text-[13px]">
+                        {list[0]}
+                        {list.length > 1 && <span className="text-gray-400"> · +{list.length - 1}</span>}
+                    </div>
+                );
+            },
         },
     ];
+
+    const expandable = {
+        expandedRowRender: (r) => {
+            const list = Array.isArray(r.changes) ? r.changes : [];
+            if (list.length === 0) return <span className="text-xs text-gray-400">Sem alterações detalhadas.</span>;
+            return (
+                <ul className="list-disc pl-5 my-1 text-[13px] text-gray-700 space-y-0.5">
+                    {list.map((c, i) => (
+                        // eslint-disable-next-line react/no-array-index-key
+                        <li key={i}>{c}</li>
+                    ))}
+                </ul>
+            );
+        },
+        rowExpandable: (r) => Array.isArray(r.changes) && r.changes.length > 0,
+    };
 
     return (
         <Modal
             open={open}
             onCancel={onClose}
             footer={null}
-            width={760}
+            width={880}
             title="Histórico de alterações"
         >
             <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
@@ -102,9 +125,10 @@ function AuditLogModal({ open, onClose }) {
                 columns={columns}
                 dataSource={filtered}
                 loading={loading}
+                expandable={expandable}
                 size="small"
                 pagination={{ pageSize: 15, showSizeChanger: false }}
-                scroll={{ y: 420 }}
+                scroll={{ y: 440 }}
             />
         </Modal>
     );

@@ -8,7 +8,7 @@ import {
     loadCompanyFromProject,
     reloadActive,
 } from './decarbonizationExport';
-import { logSave } from './decarbonizationAudit';
+import { logSave, describeChanges } from './decarbonizationAudit';
 import usePlanTargetsStore from '../targets-timeframe/store/usePlanTargetsStore';
 import useInventoryStore from '../inventory/store/useInventoryStore';
 import useDriversStore from '../drivers/store/useDriversStore';
@@ -81,7 +81,8 @@ export default function useCompanyPersistence() {
             if (rehydratingRef.current) return;
             const current = snapshot(cnpj);
             if (current == null) return;
-            if (lastSavedRef.current[cnpj] === current) {
+            const prevSnap = lastSavedRef.current[cnpj];
+            if (prevSnap === current) {
                 pendingRef.current = false;
                 return; // nada mudou em relação ao último salvo
             }
@@ -89,9 +90,15 @@ export default function useCompanyPersistence() {
             setStatus('saving');
             try {
                 await saveCompanyToProject(cnpj);
-                // Log de auditoria: quem/qual empresa/quando (fire-and-forget).
+                // Log de auditoria: quem, qual empresa, quando e O QUE mudou (diff).
+                let changes = [];
+                try {
+                    changes = describeChanges(prevSnap ? JSON.parse(prevSnap) : null, JSON.parse(current));
+                } catch (err) {
+                    changes = [];
+                }
                 const auth = useAuthStore.getState();
-                logSave({ cnpj, empresa: auth.user?.selectedCompany?.company, email: auth.authEmail });
+                logSave({ cnpj, empresa: auth.user?.selectedCompany?.company, email: auth.authEmail, changes });
                 if (myReq === reqIdRef.current) {
                     lastSavedRef.current[cnpj] = current; // só o save mais recente avança o baseline
                     pendingRef.current = false;
