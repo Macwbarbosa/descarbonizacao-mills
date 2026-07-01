@@ -2,28 +2,30 @@ import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react
 import PropTypes from 'prop-types';
 import { Area } from '@antv/g2plot';
 import { Empty } from 'antd';
+import { DEFAULT_PALETTE } from '../utils/chartTheme';
+import { downloadChartPng } from '../utils/chartPng';
 
-/** Cores por tipo de série (identidade visual do site). */
-const KIND_COLORS = { bau: '#8B7CF8', scenario: '#38C6F4', compare: '#C4B5FD', meta: '#F88A7E' };
 const fmt = (v) => `${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tCO2e`;
 
 /**
  * Trajetória no tempo: BAU, cenário ativo, cenários comparados e a linha-alvo
- * SBTi — linhas suaves com pontos e preenchimento de área leve, no estilo dos
- * mockups do site. Marcador no ano-alvo.
+ * SBTi — linhas suaves com pontos e preenchimento de área leve. Cores por tipo
+ * de série derivadas da paleta (padrão Climoo, editável).
  */
-const ScenarioLinesChart = forwardRef(({ data, serieKinds, targetYear, height }, downloadRef) => {
+const ScenarioLinesChart = forwardRef(({ data, serieKinds, targetYear, height, palette }, downloadRef) => {
     const ref = useRef(null);
     const plotRef = useRef(null);
 
     useImperativeHandle(downloadRef, () => ({
-        downloadPNG: (name) => plotRef.current?.downloadImage(name),
+        downloadPNG: (name) => downloadChartPng(ref.current, name),
     }));
 
     useEffect(() => {
         const el = ref.current;
         if (!el || !data.length) return undefined;
 
+        const P = palette || DEFAULT_PALETTE;
+        const KIND_COLORS = { bau: P.primary, scenario: P.secondary, compare: P.compare, meta: P.meta };
         const colorOf = (serie) => KIND_COLORS[serieKinds[serie]] || '#999';
 
         const config = {
@@ -107,7 +109,7 @@ const ScenarioLinesChart = forwardRef(({ data, serieKinds, targetYear, height },
                 plotRef.current = null;
             }
         };
-    }, [data, serieKinds, targetYear]);
+    }, [data, serieKinds, targetYear, palette]);
 
     if (!data.length) return <Empty description="Sem dados." />;
     return <div ref={ref} style={{ width: '100%', height, position: 'relative', overflow: 'hidden' }} />;
@@ -121,8 +123,10 @@ ScenarioLinesChart.propTypes = {
     serieKinds: PropTypes.object.isRequired,
     targetYear: PropTypes.number.isRequired,
     height: PropTypes.number,
+    // eslint-disable-next-line react/forbid-prop-types
+    palette: PropTypes.object,
 };
 
-ScenarioLinesChart.defaultProps = { height: 300 };
+ScenarioLinesChart.defaultProps = { height: 300, palette: null };
 
 export default ScenarioLinesChart;

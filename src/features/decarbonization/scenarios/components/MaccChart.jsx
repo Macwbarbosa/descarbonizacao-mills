@@ -1,56 +1,39 @@
 import React, { useId, useMemo, useRef, useState, forwardRef, useImperativeHandle } from 'react';
 import PropTypes from 'prop-types';
 import { Empty } from 'antd';
+import { DEFAULT_PALETTE, lighten, darken } from '../utils/chartTheme';
+import { downloadChartPng } from '../utils/chartPng';
 
 const fmtTon = (v) => `${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} tCO2e`;
 const fmtCost = (v) => `R$ ${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}/tCO2e`;
 const fmtTick = (v) => Number(v).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 
-const PURPLE = '#6F5BE0';
-const CYAN = '#5BC4F5';
-
 /**
  * Curva de custo marginal de abatimento (MACC): projetos ordenados por custo
  * (R$/tCO₂e); largura = potencial de abatimento. Clicar liga/desliga o projeto
- * no cenário; hover mostra tooltip com os dados do projeto. Identidade visual
- * do site: incluído = roxo, fora = ciano, degradê vertical.
+ * no cenário. Cores derivadas da paleta: incluído = primária, oportunidade =
+ * secundária, degradê vertical.
  */
-const MaccChart = forwardRef(({ rows, onToggle }, downloadRef) => {
+const MaccChart = forwardRef(({ rows, onToggle, palette }, downloadRef) => {
     const uid = useId().replace(/[:]/g, '');
     const purpleId = `maccPurple-${uid}`;
     const cyanId = `maccCyan-${uid}`;
     const shadowId = `maccShadow-${uid}`;
+
+    const P = palette || DEFAULT_PALETTE;
+    const PURPLE = P.primary;
+    const CYAN = P.secondary;
+    const purpleTop = lighten(P.primary, 0.14);
+    const purpleBottom = darken(P.primary, 0.14);
+    const cyanTop = lighten(P.secondary, 0.14);
+    const cyanBottom = darken(P.secondary, 0.14);
 
     const containerRef = useRef(null);
     const [hover, setHover] = useState(null); // { bar, x, y }
 
     // Exporta o SVG do MACC como PNG (rasteriza num canvas com fundo branco).
     useImperativeHandle(downloadRef, () => ({
-        downloadPNG: (name) => {
-            const svg = containerRef.current?.querySelector('svg');
-            if (!svg) return;
-            const vb = svg.viewBox?.baseVal;
-            const w = vb && vb.width ? vb.width : svg.clientWidth || 880;
-            const h = vb && vb.height ? vb.height : svg.clientHeight || 320;
-            const xml = new XMLSerializer().serializeToString(svg);
-            const src = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(xml)))}`;
-            const img = new Image();
-            img.onload = () => {
-                const scale = 2;
-                const canvas = document.createElement('canvas');
-                canvas.width = w * scale;
-                canvas.height = h * scale;
-                const c = canvas.getContext('2d');
-                c.fillStyle = '#FFFFFF';
-                c.fillRect(0, 0, canvas.width, canvas.height);
-                c.drawImage(img, 0, 0, canvas.width, canvas.height);
-                const a = document.createElement('a');
-                a.href = canvas.toDataURL('image/png');
-                a.download = name;
-                a.click();
-            };
-            img.src = src;
-        },
+        downloadPNG: (name) => downloadChartPng(containerRef.current, name),
     }));
 
     const { bars, ticks, W, H, pad, zeroY } = useMemo(() => {
@@ -98,12 +81,12 @@ const MaccChart = forwardRef(({ rows, onToggle }, downloadRef) => {
             <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: 'auto', display: 'block' }}>
                 <defs>
                     <linearGradient id={purpleId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stopColor="#8B7CF8" />
-                        <stop offset="1" stopColor="#5B3FD4" />
+                        <stop offset="0" stopColor={purpleTop} />
+                        <stop offset="1" stopColor={purpleBottom} />
                     </linearGradient>
                     <linearGradient id={cyanId} x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stopColor="#6FD8FA" />
-                        <stop offset="1" stopColor="#4FAFF0" />
+                        <stop offset="0" stopColor={cyanTop} />
+                        <stop offset="1" stopColor={cyanBottom} />
                     </linearGradient>
                     <filter id={shadowId} x="-20%" y="-20%" width="140%" height="140%">
                         <feDropShadow dx="0" dy="3" stdDeviation="3" floodColor="#4C1D95" floodOpacity="0.25" />
@@ -201,6 +184,10 @@ MaccChart.displayName = 'MaccChart';
 MaccChart.propTypes = {
     rows: PropTypes.arrayOf(PropTypes.object).isRequired, // eslint-disable-line react/forbid-prop-types
     onToggle: PropTypes.func.isRequired,
+    // eslint-disable-next-line react/forbid-prop-types
+    palette: PropTypes.object,
 };
+
+MaccChart.defaultProps = { palette: null };
 
 export default MaccChart;

@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useMemo, forwardRef, useImperativeHandle } fr
 import PropTypes from 'prop-types';
 import { Column } from '@antv/g2plot';
 import { Empty } from 'antd';
+import { DEFAULT_PALETTE, toGradient, mix, darken } from '../utils/chartTheme';
+import { downloadChartPng } from '../utils/chartPng';
 
 const fmt = (v) => Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const fmtPct = (v) => `${Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
@@ -28,37 +30,22 @@ const wrapLabel = (text, maxLen = 12, maxLines = 3) => {
 };
 
 /**
- * Paleta da cascata (identidade visual do site): barra-base em roxo escuro,
- * projetos em degradê roxo→azul conforme a sequência, resultado em ciano.
- * Gradientes G2: 'l(90) 0:<cor base> 1:<cor topo>' (de baixo para cima).
- */
-const BASEYEAR_GRADIENT = 'l(90) 0:#2A0F52 1:#4A2A86';
-const BASE_GRADIENT = 'l(90) 0:#3D1773 1:#6B2FBF';
-const RESULT_GRADIENT = 'l(90) 0:#22B8E6 1:#7DD3FC';
-const PROJECT_STOPS = [
-    ['#7C5CE0', '#9F7AEA'],
-    ['#6F66E4', '#8F85F0'],
-    ['#5F73E8', '#7E93F2'],
-    ['#4F80EC', '#6DA1F5'],
-    ['#3F8DF0', '#5CAFF8'],
-];
-const projectGradient = (i) => {
-    const [bottom, top] = PROJECT_STOPS[i % PROJECT_STOPS.length];
-    return `l(90) 0:${bottom} 1:${top}`;
-};
-
-const META_COLOR = '#FA8C7E';
-
-/**
  * Cascata no ano-alvo: BAU → uma barra por Projeto (abatimento) → resultado,
- * com a linha de meta em coral. Estilo alinhado aos mockups do site.
+ * com a linha de meta. Cores derivadas da paleta (padrão Climoo, editável).
  */
-const WaterfallChart = forwardRef(({ data, metaTarget, targetYear, baseYear, height }, downloadRef) => {
+const WaterfallChart = forwardRef(({ data, metaTarget, targetYear, baseYear, height, palette }, downloadRef) => {
     const ref = useRef(null);
     const plotRef = useRef(null);
 
+    const P = palette || DEFAULT_PALETTE;
+    const BASEYEAR_GRADIENT = toGradient(darken(P.primary, 0.18));
+    const BASE_GRADIENT = toGradient(P.primary);
+    const RESULT_GRADIENT = toGradient(P.secondary);
+    const META_COLOR = P.meta;
+    const projectGradient = (i, n) => toGradient(mix(P.primary, P.secondary, n > 1 ? i / (n - 1) : 0));
+
     useImperativeHandle(downloadRef, () => ({
-        downloadPNG: (name) => plotRef.current?.downloadImage(name),
+        downloadPNG: (name) => downloadChartPng(ref.current, name),
     }));
 
     const rows = useMemo(() => {
@@ -74,7 +61,7 @@ const WaterfallChart = forwardRef(({ data, metaTarget, targetYear, baseYear, hei
             const end = cum - b.value;
             // 2 linhas: valor da redução + % dessa redução SOBRE O BAU.
             const pctBau = data.bau > 0 ? fmtPct((b.value / data.bau) * 100) : '';
-            out.push({ stage: b.name, range: [end, cum], fill: projectGradient(i), label: `− ${fmt(b.value)}\n${pctBau}` });
+            out.push({ stage: b.name, range: [end, cum], fill: projectGradient(i, data.bars.length), label: `− ${fmt(b.value)}\n${pctBau}` });
             cum = end;
         });
         // Última barra = a META no ano-alvo (na altura da linha de meta), como no
@@ -85,7 +72,7 @@ const WaterfallChart = forwardRef(({ data, metaTarget, targetYear, baseYear, hei
             out.push({ stage: 'Resultado', range: [0, data.result], fill: RESULT_GRADIENT, label: fmt(data.result) });
         }
         return out;
-    }, [data, targetYear, metaTarget, baseYear]);
+    }, [data, targetYear, metaTarget, baseYear, palette]);
 
     useEffect(() => {
         const el = ref.current;
@@ -123,7 +110,7 @@ const WaterfallChart = forwardRef(({ data, metaTarget, targetYear, baseYear, hei
             rawFields: ['fill', 'label'],
             columnWidthRatio: 0.88,
             columnStyle: (d) => ({
-                fill: fillByStage[d.stage] || PROJECT_STOPS[0][0],
+                fill: fillByStage[d.stage] || BASE_GRADIENT,
                 // Cantos levemente arredondados (retângulo) — evita "pílula" nas barras finas.
                 radius: [3, 3, 3, 3],
                 shadowColor: 'rgba(76, 29, 149, 0.35)',
@@ -212,8 +199,10 @@ WaterfallChart.propTypes = {
     targetYear: PropTypes.number.isRequired,
     baseYear: PropTypes.number,
     height: PropTypes.number,
+    // eslint-disable-next-line react/forbid-prop-types
+    palette: PropTypes.object,
 };
 
-WaterfallChart.defaultProps = { data: null, metaTarget: null, baseYear: null, height: 320 };
+WaterfallChart.defaultProps = { data: null, metaTarget: null, baseYear: null, height: 320, palette: null };
 
 export default WaterfallChart;

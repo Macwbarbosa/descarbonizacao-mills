@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState, useRef } from 'react';
 import { Button, Spin, Alert, Switch, Segmented, Tabs, Tag, Row, Col, Tooltip, Modal, Input, Empty, message } from 'antd';
-import { PlusOutlined, CloseOutlined, FullscreenOutlined, EditOutlined, DownloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, CloseOutlined, EditOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/ui/Card';
 import useScenariosStore from './store/useScenariosStore';
 import useProjectsStore from '../projects/store/useProjectsStore';
@@ -31,6 +31,9 @@ import WaterfallChart from './components/WaterfallChart';
 import ScenarioLinesChart from './components/ScenarioLinesChart';
 import MaccChart from './components/MaccChart';
 import ScenarioComparisonTable from './components/ScenarioComparisonTable';
+import ChartConfig from './components/ChartConfig';
+import useChartTheme from './utils/chartTheme';
+import { downloadXlsx } from './utils/chartExport';
 
 const fmt0 = (v) => Number(v || 0).toLocaleString('pt-BR', { maximumFractionDigits: 0 });
 
@@ -54,6 +57,7 @@ function ScenariosPage() {
     const upsertItem = useScenariosStore((s) => s.upsertItem);
     const removeItem = useScenariosStore((s) => s.removeItem);
     const assignOrphanScenarios = useScenariosStore((s) => s.assignOrphanScenarios);
+    const palette = useChartTheme((s) => s.palette);
 
     const projects = useProjectsStore((s) => s.projects);
     const bank = useProjectsStore((s) => s.bank);
@@ -302,18 +306,38 @@ function ScenariosPage() {
     const chartRefs = { cascata: cascadeRef, linhas: linesRef, macc: maccRef };
     const downloadChart = (key) => chartRefs[key].current?.downloadPNG(`${key}-${targetYear}.png`);
 
-    // Cabeçalho dos cards de gráfico: título + baixar PNG + expandir (popup).
+    // Dados (para exportar .xlsx) por gráfico.
+    const xlsxRows = {
+        cascata: () => {
+            if (!wf) return [];
+            const r = [];
+            if (wf.baseEmission != null && baseYear) r.push({ Etapa: `Base ${baseYear}`, Tipo: 'Emissão', 'tCO2e': Number(wf.baseEmission) });
+            r.push({ Etapa: `BAU ${targetYear}`, Tipo: 'Emissão', 'tCO2e': Number(wf.bau) });
+            (wf.bars || []).forEach((b) => r.push({ Etapa: b.name, Tipo: 'Redução (projeto)', 'tCO2e': Number(b.value) }));
+            if (focusMetaTarget != null) r.push({ Etapa: `Meta ${targetYear}`, Tipo: 'Meta', 'tCO2e': Number(focusMetaTarget) });
+            else r.push({ Etapa: 'Resultado', Tipo: 'Resultado', 'tCO2e': Number(wf.result) });
+            return r;
+        },
+        linhas: () => lineDataView.map((p) => ({ Ano: Number(p.year), Série: p.serie, 'Valor (tCO2e)': Number(p.value) })),
+        macc: () =>
+            macc.map((m) => ({
+                Projeto: m.name,
+                'Custo (R$/tCO2e)': Number(m.costPerTon),
+                'Potencial (tCO2e)': Number(m.potential),
+                Incluído: m.included ? 'Sim' : 'Não',
+            })),
+    };
+    const downloadChartData = (key) => downloadXlsx(`${key}-${targetYear}.xlsx`, CHART_TITLES[key], xlsxRows[key]());
+
+    // Cabeçalho dos cards de gráfico: título + ícone de config (baixar / cores).
     const chartHeader = (key) => (
         <div className="flex items-center justify-between mb-2">
             <h3 className="text-base font-semibold text-[#210856]">{CHART_TITLES[key]}</h3>
-            <div className="flex items-center">
-                <Tooltip title="Baixar PNG">
-                    <Button type="text" size="small" icon={<DownloadOutlined />} onClick={() => downloadChart(key)} aria-label="Baixar PNG" />
-                </Tooltip>
-                <Tooltip title="Expandir gráfico">
-                    <Button type="text" size="small" icon={<FullscreenOutlined />} onClick={() => setZoomChart(key)} aria-label="Expandir gráfico" />
-                </Tooltip>
-            </div>
+            <ChartConfig
+                onDownloadPng={() => downloadChart(key)}
+                onDownloadXlsx={() => downloadChartData(key)}
+                onExpand={() => setZoomChart(key)}
+            />
         </div>
     );
 
@@ -340,7 +364,7 @@ function ScenariosPage() {
             <Col xs={24} lg={16} xl={17}>
                 <Card className="mb-4" style={chartCardStyle}>
                     {chartHeader('cascata')}
-                    <WaterfallChart ref={cascadeRef} data={wf} metaTarget={focusMetaTarget} targetYear={targetYear} baseYear={baseYear} />
+                    <WaterfallChart ref={cascadeRef} data={wf} metaTarget={focusMetaTarget} targetYear={targetYear} baseYear={baseYear} palette={palette} />
                 </Card>
                 <Card className="mb-4" style={chartCardStyle}>
                     {chartHeader('linhas')}
@@ -355,11 +379,11 @@ function ScenariosPage() {
                             ]}
                         />
                     </div>
-                    <ScenarioLinesChart ref={linesRef} data={lineDataView} serieKinds={serieKinds} targetYear={targetYear} />
+                    <ScenarioLinesChart ref={linesRef} data={lineDataView} serieKinds={serieKinds} targetYear={targetYear} palette={palette} />
                 </Card>
                 <Card className="mb-4" style={chartCardStyle}>
                     {chartHeader('macc')}
-                    <MaccChart ref={maccRef} rows={macc} onToggle={toggleMaccProject} />
+                    <MaccChart ref={maccRef} rows={macc} onToggle={toggleMaccProject} palette={palette} />
                 </Card>
             </Col>
         </Row>
@@ -377,12 +401,12 @@ function ScenariosPage() {
             styles={{ mask: { backdropFilter: 'blur(6px)', backgroundColor: 'rgba(23, 12, 61, 0.45)' } }}
         >
             {zoomChart === 'cascata' && (
-                <WaterfallChart data={wf} metaTarget={focusMetaTarget} targetYear={targetYear} baseYear={baseYear} height={560} />
+                <WaterfallChart data={wf} metaTarget={focusMetaTarget} targetYear={targetYear} baseYear={baseYear} height={560} palette={palette} />
             )}
             {zoomChart === 'linhas' && (
-                <ScenarioLinesChart data={lineDataView} serieKinds={serieKinds} targetYear={targetYear} height={560} />
+                <ScenarioLinesChart data={lineDataView} serieKinds={serieKinds} targetYear={targetYear} height={560} palette={palette} />
             )}
-            {zoomChart === 'macc' && <MaccChart rows={macc} onToggle={toggleMaccProject} />}
+            {zoomChart === 'macc' && <MaccChart rows={macc} onToggle={toggleMaccProject} palette={palette} />}
         </Modal>
     );
 
